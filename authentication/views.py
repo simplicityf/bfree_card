@@ -24,6 +24,21 @@ from .forms import validate_password_strength
 from user_agents import parse
 from django.conf import settings
 from rest_framework.authtoken.models import Token
+
+
+# Function to handle json request from postman
+def get_request_data(request):
+    """
+    Returns parsed JSON data if the content type is JSON,
+    otherwise returns request.POST.
+    """
+    if request.content_type == "application/json":
+        try:
+            return json.loads(request.body)
+        except json.JSONDecodeError:
+            return {}
+    return request.POST
+
 @login_required
 def security(request):
     """
@@ -46,14 +61,14 @@ def security(request):
         "critical_broadcasts": critical_broadcasts
     })
 
-
 def password_reset(request):
     """
     API endpoint to trigger a password reset email.
     Expects a POST request with an "email" parameter.
     """
     if request.method == "POST":
-        email = request.POST.get("email")
+        data = get_request_data(request)
+        email = data.get("email")
         if not email:
             return JsonResponse({"error": "Email is required."}, status=400)
         
@@ -63,22 +78,34 @@ def password_reset(request):
             if associated_users.exists():
                 for user in associated_users:
                     subject = "Bfree Password Reset Request"
-                    email_template_name = "email_templates/password_reset_email.html"
-                    context = {
-                        "email": user.email,
-                        "domain": request.get_host(),
-                        "site_name": "Interface",
-                        "uid": urlsafe_base64_encode(force_bytes(user.pk)),
-                        "first_name": user.first_name,
-                        "last_name": user.last_name,
-                        "token_expiry_minutes": settings.PASSWORD_RESET_TIMEOUT // 60,
-                        "token": default_token_generator.make_token(user),
-                        "protocol": "http",
-                    }
-                    email_content = render_to_string(email_template_name, context)
+                    
+                    # Prepare dynamic data for the email
+                    domain = request.get_host()
+                    protocol = "http"  # or "https" if applicable
+                    uid = urlsafe_base64_encode(force_bytes(user.pk))
+                    token = default_token_generator.make_token(user)
+                    token_expiry_minutes = settings.PASSWORD_RESET_TIMEOUT // 60
+                    
+                    # Construct a reset URL (adjust the URL pattern as needed)
+                    reset_url = f"{protocol}://{domain}/reset/{uid}/{token}/"
+                    
+                    # Compose a plain text email message
+                    email_content = (
+                        f"Hello {user.first_name} {user.last_name},\n\n"
+                        f"We received a request to reset your password.\n"
+                        f"Please click the link below to reset your password:\n\n"
+                        f"{reset_url}\n\n"
+                        f"This link will expire in {token_expiry_minutes} minutes.\n\n"
+                        f"If you did not request a password reset, please ignore this email.\n\n"
+                        f"Thank you,\n"
+                        f"The Bfree Team"
+                    )
+                    
                     try:
-                        msg = EmailMessage(subject, email_content, settings.EMAIL_HOST_USER, [user.email])
-                        msg.content_subtype = "html"
+                        # Create and send the email message
+                        msg = EmailMessage(
+                            subject, email_content, settings.EMAIL_HOST_USER, [user.email]
+                        )
                         msg.send()
                     except BadHeaderError:
                         return JsonResponse({"error": "Invalid header found."}, status=400)
@@ -87,9 +114,8 @@ def password_reset(request):
             return JsonResponse({"error": "Invalid email."}, status=400)
     return JsonResponse({"error": "Only POST method allowed."}, status=405)
 
-
 @sensitive_post_parameters()
-@csrf_protect
+@csrf_exempt
 @never_cache
 def Signin(request):
     """
@@ -98,8 +124,9 @@ def Signin(request):
     On success, generates an OTP and sends it to the user.
     """
     if request.method == "POST":
-        email = request.POST.get("email")
-        password = request.POST.get("password")
+        data = get_request_data(request)
+        email = data.get("email")
+        password = data.get("password")
         if not (email and password):
             return JsonResponse({"error": "Email and password are required."}, status=400)
         
@@ -111,6 +138,7 @@ def Signin(request):
         if not user.check_password(password):
             return JsonResponse({"error": "Wrong login details. Please try again."}, status=400)
         
+        # Generate the OTP and store it in session
         login_otp = str(secrets.randbelow(90000) + 10000)
         request.session["login_otp"] = login_otp
         request.session["user_id"] = user.id
@@ -119,25 +147,26 @@ def Signin(request):
         request.session["login_otp_timestamp"] = timezone.now().isoformat()
         
         subject = "Bfree Login Verification Code"
-        email_template_name = "email_templates/login_otp_email_template.html"
-        context = {
-            "first_name": user.first_name,
-            "last_name": user.last_name,
-            "login_otp": login_otp,
-        }
-        email_content = render_to_string(email_template_name, context)
+        # Build a plain text email message directly
+        email_content = (
+            f"Hello {user.first_name} {user.last_name},\n\n"
+            f"Your login verification code is: {login_otp}\n\n"
+            "Please use this code to complete your login.\n\n"
+            "Thank you,\n"
+            "The Bfree Team"
+        )
+        
         try:
             msg = EmailMessage(subject, email_content, settings.EMAIL_HOST_USER, [user.email])
-            msg.content_subtype = "html"
             msg.send()
         except BadHeaderError:
             return JsonResponse({"error": "Invalid header found."}, status=400)
+        
         return JsonResponse({"message": "OTP sent. Please verify."})
     return JsonResponse({"error": "Only POST method allowed."}, status=405)
 
-
 @sensitive_post_parameters()
-@csrf_protect
+@csrf_exempt
 @never_cache
 def signin_otp(request):
     """
@@ -148,7 +177,8 @@ def signin_otp(request):
     if not request.session.get("user_email"):
         return JsonResponse({"error": "Session expired, please sign in again."}, status=400)
     if request.method == "POST":
-        user_entered_otp = request.POST.get("otp")
+        data = get_request_data(request)
+        user_entered_otp = data.get("otp")
         saved_otp = request.session.get("login_otp")
         otp_timestamp = request.session.get("login_otp_timestamp")
         if not otp_timestamp:
@@ -163,20 +193,15 @@ def signin_otp(request):
                     user = User.objects.get(id=request.session.get("user_id"))
                 except User.DoesNotExist:
                     return JsonResponse({"error": "User not found."}, status=400)
-                # Clear OTP from session
                 del request.session["login_otp"]
-                # Create or get token for the user
                 token, created = Token.objects.get_or_create(user=user)
-                # (Optionally) Log the user in via session if needed:
-                # login(request, user)
                 return JsonResponse({"message": "Login successful.", "token": token.key})
             return JsonResponse({"error": "Your verification code is incorrect."}, status=400)
         return JsonResponse({"error": "Incorrect or expired OTP. Please try again."}, status=400)
     return JsonResponse({"error": "Only POST method allowed."}, status=405)
 
-
 @sensitive_post_parameters()
-@csrf_protect
+@csrf_exempt
 @never_cache
 def Signup(request):
     """
@@ -186,17 +211,17 @@ def Signup(request):
     Generates an OTP for email verification.
     """
     if request.method == "POST":
-        email = request.POST.get("email")
-        password = request.POST.get("password")
-        first_name = request.POST.get("first_name")
-        last_name = request.POST.get("last_name")
-        phone_number = request.POST.get("phone_number")
-        country = request.POST.get("country")
+        data = get_request_data(request)
+        email = data.get("email")
+        password = data.get("password")
+        first_name = data.get("first_name")
+        last_name = data.get("last_name")
+        phone_number = data.get("phone_number")
+        country = data.get("country")
         
         if not (email and password and first_name and last_name):
             return JsonResponse({"error": "Missing required fields."}, status=400)
         
-        # Check if email is already registered
         if User.objects.filter(username=email).exists():
             return JsonResponse({"error": "Email is already registered."}, status=400)
             
@@ -211,13 +236,7 @@ def Signup(request):
         request.session["email_verification_otp_timestamp"] = timezone.now().isoformat()
         
         subject = "Bfree Email Verification Code"
-        email_template_name = "email_templates/email_verification_otp_email_template.html"
-        context = {
-            "first_name": first_name,
-            "last_name": last_name,
-            "email_verification_otp": email_verification_otp
-        }
-        email_content = render_to_string(email_template_name, context)
+        email_content = f"Hello {first_name},\n\nYour email verification code is: {request.session.get('email_verification_otp')}\n\nThanks,\nThe Team"
         try:
             msg = EmailMessage(subject, email_content, settings.EMAIL_HOST_USER, [email])
             msg.content_subtype = "html"
@@ -227,9 +246,8 @@ def Signup(request):
         return JsonResponse({"message": "Email verification OTP sent."})
     return JsonResponse({"error": "Only POST method allowed."}, status=405)
 
-
 @sensitive_post_parameters()
-@csrf_protect
+@csrf_exempt
 @never_cache
 def email_verification_otp(request):
     """
@@ -240,7 +258,8 @@ def email_verification_otp(request):
     if not request.session.get("email"):
         return JsonResponse({"error": "Session expired, please signup again."}, status=400)
     if request.method == "POST":
-        user_entered_otp = request.POST.get("otp")
+        data = get_request_data(request)
+        user_entered_otp = data.get("otp")
         saved_otp = request.session.get("email_verification_otp")
         otp_timestamp = request.session.get("email_verification_otp_timestamp")
         if not otp_timestamp:
@@ -265,8 +284,6 @@ def email_verification_otp(request):
                     first_name=first_name,
                     last_name=last_name
                 )
-                # (Optionally) Log the user in via session if needed:
-                # login(request, user)
                 token, created = Token.objects.get_or_create(user=user)
                 
                 user_agent = request.META.get("HTTP_USER_AGENT", "")
@@ -289,10 +306,7 @@ def email_verification_otp(request):
                 profile.save()
                 
                 email_subject = "Welcome to Bfree"
-                email_body = render_to_string("email_templates/welcome_email_template.html", {
-                    "first_name": first_name,
-                    "last_name": last_name
-                })
+                email_body = f"Welcome {first_name} {last_name},\n\nThank you for signing up for Bfree!"
                 try:
                     msg = EmailMessage(email_subject, email_body, settings.EMAIL_HOST_USER, [email, settings.EMAIL_HOST_USER])
                     msg.content_subtype = "html"
@@ -304,7 +318,6 @@ def email_verification_otp(request):
             return JsonResponse({"error": "Your verification code is incorrect."}, status=400)
         return JsonResponse({"error": "Incorrect or expired OTP. Please try again."}, status=400)
     return JsonResponse({"error": "Only POST method allowed."}, status=405)
-
 
 def validate_password_and_return_error(password):
     """
@@ -325,7 +338,6 @@ def validate_password_and_return_error(password):
         return error_message
     return None
 
-
 @login_required
 def send_change_password_otp(request):
     """
@@ -333,8 +345,9 @@ def send_change_password_otp(request):
     Expects POST with "new_password" and "confirm_password".
     """
     if request.method == "POST":
-        new_password = request.POST.get("new_password")
-        confirm_password = request.POST.get("confirm_password")
+        data = get_request_data(request)
+        new_password = data.get("new_password")
+        confirm_password = data.get("confirm_password")
         if new_password != confirm_password:
             return JsonResponse({"error": "Passwords do not match. Please try again."}, status=400)
         
@@ -348,13 +361,10 @@ def send_change_password_otp(request):
         request.session["password_change_otp_timestamp"] = timezone.now().isoformat()
         
         subject = "Bfree Password Change Verification Code"
-        email_template_name = "email_templates/password_change_otp_email.html"
-        context = {
-            "first_name": request.user.first_name,
-            "last_name": request.user.last_name,
-            "password_change_otp": password_change_otp,
+        email_content = {
+            f"Hello {request.user.first_name} {request.user.last_name}",
+            f"Your change password otp is: {password_change_otp}"
         }
-        email_content = render_to_string(email_template_name, context)
         try:
             msg = EmailMessage(subject, email_content, settings.EMAIL_HOST_USER, [request.user.email])
             msg.content_subtype = "html"
@@ -364,7 +374,6 @@ def send_change_password_otp(request):
         return JsonResponse({"message": "Email sent."})
     return JsonResponse({"error": "Only POST method allowed."}, status=405)
 
-
 @login_required
 def validate_change_password_otp(request):
     """
@@ -372,7 +381,8 @@ def validate_change_password_otp(request):
     Expects POST with "otp".
     """
     if request.method == "POST":
-        user_entered_otp = request.POST.get("otp")
+        data = get_request_data(request)
+        user_entered_otp = data.get("otp")
         saved_otp = request.session.get("password_change_otp")
         new_password = request.session.get("new_password")
         otp_timestamp = request.session.get("password_change_otp_timestamp")
@@ -393,7 +403,6 @@ def validate_change_password_otp(request):
         return JsonResponse({"error": "Incorrect or expired OTP. Please try again."}, status=400)
     return JsonResponse({"error": "Only POST method allowed."}, status=405)
 
-
 @login_required
 def profile(request):
     """
@@ -406,11 +415,12 @@ def profile(request):
         return JsonResponse({"error": "Profile not found."}, status=404)
     
     if request.method == "POST":
-        phone_number = request.POST.get("phone_number")
-        address = request.POST.get("address")
-        city = request.POST.get("city")
-        state = request.POST.get("state")
-        country = request.POST.get("country")
+        data = get_request_data(request)
+        phone_number = data.get("phone_number")
+        address = data.get("address")
+        city = data.get("city")
+        state = data.get("state")
+        country = data.get("country")
         
         if phone_number is not None:
             profile_obj.phone_number = phone_number

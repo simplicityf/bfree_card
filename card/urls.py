@@ -1,5 +1,15 @@
 from django.urls import path
-from .views import *
+from .views import (
+    cards,
+    create_card,
+    freeze_and_unfreeze_card,
+    fund_card,
+    withdraw_from_card,
+    cancel_card,
+    card_transactions,
+    card_statement,
+    test
+)
 
 urlpatterns = [
     path('', cards, name='cards'),
@@ -12,5 +22,3 @@ urlpatterns = [
     path('card_statement/<card_id>/', card_statement, name='card_statement'),
     path('test/', test, name='test')
 ]
-
-

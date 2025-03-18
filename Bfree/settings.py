@@ -5,7 +5,7 @@ from decouple import config
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = config('SECRET_KEY')
-DEBUG = config('DEBUG', cast=bool, default=True)
+DEBUG = True
 
 ALLOWED_HOSTS = ['127.0.0.1', 'localhost', 'crypto.bfree.cards', 'www.crypto.bfree.cards']
 
@@ -36,6 +36,7 @@ EMAIL_PORT = 465
 EMAIL_USE_SSL = True
 
 INSTALLED_APPS = [
+    'corsheaders',
     "admin_interface",
     "colorfield",
     "django.contrib.admin",
@@ -50,14 +51,15 @@ INSTALLED_APPS = [
     "card.apps.CardConfig",
     "webhooks.apps.WebhooksConfig",
     'django_extensions',
-    'rest_framework',             
-    'rest_framework.authtoken',    
+    'rest_framework',
+    'rest_framework.authtoken',
 ]
 
 X_FRAME_OPTIONS = "SAMEORIGIN"
 SILENCED_SYSTEM_CHECKS = ["security.W019"]
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
     "django.middleware.security.SecurityMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
@@ -134,3 +136,6 @@ REST_FRAMEWORK = {
          'rest_framework.permissions.IsAuthenticated',
     ),
 }
+
+# CORS settings: allow all origins during development
+CORS_ALLOW_ALL_ORIGINS = True

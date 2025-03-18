@@ -84,4 +84,5 @@ class CriticalBroadcast(models.Model):
     message = models.TextField()
     updated_at = models.DateTimeField(auto_now=True)
     created_at = models.DateTimeField(auto_now_add=True)
+
         
