@@ -1,0 +1,338 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %} Security{% endblock %}
+{% block content %}
+    <!-- change your password section -->
+    <div class="change_password_container"  onclick="popUpcontent()">
+        <div class="change_password_main" id="changePasswordMain">
+            <div class="change_pass_box">
+                <h4>Change your password</h4>
+            </div>
+
+            <form class="form_password" id="password_change_form">
+                {% csrf_token %}
+                <div class="new_password_box">
+                    <label for="">New Password</label>
+                    <div class="new_password_input">
+                        <input type="password" name="new_password" id="new_password">
+                        <span class="material-symbols-outlined" id="toggle_new_password">
+                            visibility
+                        </span>
+                    </div>
+                </div>
+
+                <div class="confirm_password_box">
+                    <label for="">Confirm Password</label>
+                    <div class="confim_password_input">
+                        <input type="password" name="confirm_password" id="confirm_password">
+                        <span class="material-symbols-outlined"  id="toggle_confirm_password">
+                           visibility
+                        </span>
+                    </div>
+                </div>
+                
+                <div class="login_error_message">
+                    <br>
+                    <span class="password_change_form_error"></span>
+                </div>
+                <div class="send_verification_box">
+                    <button id="sendVerificationBtn" type="submit">Send Verification Code</button>
+                </div>
+            </form>
+        </div>
+
+        <!-- OTP OVERLAY -->
+        <div class="enter_verification_overlay" id="enterVerificationOverlay"></div>
+
+        <!-- OTP SECTION -->
+        <div class="enter_verification-container" id="enterVerificationContainer">
+            <div class="enter_verification-main-head">
+                <div class="enter_verification-head-title">
+                    <h2>Enter Verification Code</h2>
+                    <p>Enter the code sent to your email {{email}}</p>
+                </div>
+
+                <form id="otp-form" class="otp_form">
+                    {% csrf_token %}
+                    <input type="text" id="otp-input1" class="otp-input" maxlength="1">
+                    <input type="text" id="otp-input2" class="otp-input" maxlength="1">
+                    <input type="text" id="otp-input3" class="otp-input" maxlength="1">
+                    <input type="text" id="otp-input4" class="otp-input" maxlength="1">
+                    <input type="hidden" value="" id="otp-input-number" name="otp">
+                    <button type="submit" style="display: none;" class="submitButton"></button>
+                </form>
+
+                <div class="login_error_message">
+                    <br>
+                    <span class="otp_form_error"></span>
+                </div>
+
+                <div class="submit_otp_btn-box">
+                    <button id="submitBtn" disabled>SUBMIT</button>
+                </div>
+
+                <div class="resend_code_box" id="resend_code_box">
+                    <span>Resend Code</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- PASSWORD SECTION -->
+        <div class="password_change-container" id="passwordChangeContainer">
+            <div class="password_change-main-head">  
+                <div class="password_change-image-box">
+                    <svg width="72" height="72" viewBox="0 0 72 72" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M36 3.9375C27.4995 3.94715 19.3498 7.32826 13.3391 13.3391C7.32826 19.3498 3.94715 27.4995 3.9375 36C5.69888 78.5352 66.3076 78.5229 68.0626 35.9997C68.0528 27.4992 64.6717 19.3497 58.6609 13.3389C52.6501 7.32821 44.5005 3.94715 36 3.9375ZM36 64.6875C28.3943 64.6788 21.1025 61.6536 15.7245 56.2755C10.3464 50.8975 7.32117 43.6057 7.3125 36C8.88863 -2.0578 63.1171 -2.04676 64.6876 36.0002C64.6788 43.6059 61.6536 50.8976 56.2755 56.2756C50.8974 61.6536 43.6057 64.6788 36 64.6875Z" fill="#001F8B"/>
+                        <path d="M48.3051 24.3074L32.9984 39.6141L25.9413 32.5575C25.6233 32.2487 25.1966 32.0774 24.7533 32.0806C24.31 32.0839 23.8858 32.2614 23.5724 32.5749C23.2589 32.8883 23.0814 33.3125 23.0782 33.7558C23.0749 34.1991 23.2463 34.6258 23.5551 34.9438L31.8054 43.1939C32.1231 43.508 32.5518 43.6842 32.9985 43.6842C33.4452 43.6842 33.8739 43.508 34.1916 43.1939L50.6914 26.6935C50.9995 26.3754 51.1702 25.9489 51.1667 25.506C51.1631 25.0631 50.9856 24.6394 50.6724 24.3263C50.3592 24.0131 49.9355 23.8356 49.4926 23.8321C49.0498 23.8286 48.6233 23.9993 48.3051 24.3074Z" fill="#001F8B"/>
+                    </svg>
+                </div>
+    
+                <div class="password_change-head-title">
+                    <h2>Password Changed</h2>
+                    <p>Your password has been changed successfully.</p>
+                </div>
+    
+                <div class="password_change_btn-box">
+                    <a href="{% url "signin" %}">BACK TO LOGIN</a>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- <div class="change_password_messsage_logo">
+        <img src="images/message-logo.svg" alt="">
+    </div> -->  
+
+    <script>
+        // toggle for eye icons
+        document.addEventListener('DOMContentLoaded', function() {
+            const toggleNewPassword = document.getElementById('toggle_new_password');
+            const newPasswordInput = document.getElementById('new_password');
+            const toggleConfirmPassword = document.getElementById('toggle_confirm_password');
+            const confirmPasswordInput = document.getElementById('confirm_password');
+
+            toggleNewPassword.addEventListener('click', function() {
+                togglePasswordVisibility(newPasswordInput, toggleNewPassword);
+            });
+
+            toggleConfirmPassword.addEventListener('click', function() {
+                togglePasswordVisibility(confirmPasswordInput, toggleConfirmPassword);
+            });
+
+            function togglePasswordVisibility(inputField, toggleElement) {
+                const type = inputField.getAttribute('type') === 'password' ? 'text' : 'password';
+                inputField.setAttribute('type', type);
+                toggleElement.textContent = type === 'password' ? 'visibility' : 'visibility_off';
+            }
+        });
+    </script>
+
+
+    <script>
+        //otp and verification
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.querySelector("#otp-form");
+            const inputs = document.querySelectorAll(".otp-input");
+            const verifyBtn = document.querySelector("#submitBtn");
+
+            const isAllInputFilled = () => {
+                return Array.from(inputs).every((item) => item.value);
+            };
+
+            const getOtpText = () => {
+                let text = "";
+                inputs.forEach((input) => {
+                    text += input.value;
+                });
+                return text;
+            };
+
+            const verifyOTP = () => {
+                if (isAllInputFilled()) {
+                    const text = getOtpText();
+                    // Update button styling
+                    verifyBtn.disabled = false;
+                    verifyBtn.style.backgroundColor = "#001F8B"; // Change to desired color
+                    verifyBtn.style.cursor = "pointer"; // Optionally change cursor style
+                    // alert(`Your OTP is "${text}". OTP is correct`);
+                }  else {
+                    verifyBtn.disabled = true;
+                    verifyBtn.style.backgroundColor = "#CCC"; // Change to disabled color
+                    verifyBtn.style.cursor = "not-allowed"; // Optionally change cursor style
+                }
+            };
+
+            const toggleFilledClass = (field) => {
+                if (field.value) {
+                    field.classList.add("filled");
+                } else {
+                    field.classList.remove("filled");
+                }
+            };
+
+            form.addEventListener("input", (e) => {
+                const target = e.target;
+                const value = target.value;
+                console.log({ target, value });
+                toggleFilledClass(target);
+                if (target.nextElementSibling) {
+                    target.nextElementSibling.focus();
+                }
+                verifyOTP();
+            });
+
+            inputs.forEach((input, currentIndex) => {
+                // fill check
+                toggleFilledClass(input);
+
+                // paste event
+                input.addEventListener("paste", (e) => {
+                    e.preventDefault();
+                    const text = e.clipboardData.getData("text");
+                    console.log(text);
+                    inputs.forEach((item, index) => {
+                        if (index >= currentIndex && text[index - currentIndex]) {
+                            item.focus();
+                            item.value = text[index - currentIndex] || "";
+                            toggleFilledClass(item);
+                            verifyOTP();
+                        }
+                    });
+                });
+
+                // backspace event
+                input.addEventListener("keydown", (e) => {
+                    if (e.keyCode === 8) {
+                        e.preventDefault();
+                        input.value = "";
+                        // console.log(input.value);
+                        toggleFilledClass(input);
+                        if (input.previousElementSibling) {
+                            input.previousElementSibling.focus();
+                        }
+                    } else {
+                        if (input.value && input.nextElementSibling) {
+                            input.nextElementSibling.focus();
+                        }
+                    }
+                    verifyOTP(); // Call verifyOTP after input event
+                });
+            });
+
+            verifyBtn.addEventListener("click", () => {
+                verifyOTP();
+            });
+        });
+
+
+    </script>
+
+    <script>
+        const input1 = document.getElementById('otp-input1');
+        const input2 = document.getElementById('otp-input2');
+        const input3 = document.getElementById('otp-input3');
+        const input4 = document.getElementById('otp-input4');
+
+        
+        const otpInputNumber = document.getElementById('otp-input-number');
+
+        input1.addEventListener('input', updateOTP);
+        input2.addEventListener('input', updateOTP);
+        input3.addEventListener('input', updateOTP);
+        input4.addEventListener('input', updateOTP);
+
+        function updateOTP() {
+            const otpValue = input1.value + input2.value + input3.value + input4.value;
+            otpInputNumber.value = otpValue;
+        }
+    </script>
+
+    <!-- JavaScript for Form Submission -->
+    <script>
+
+        $('.submit_otp_btn-box').click(function(e) {
+            e.preventDefault();
+            $('.submitButton').click();
+        });
+
+        $('.otp_form input').keydown(function(event) {
+            if (event.keyCode == 13) {
+                $('.submitButton').click();
+            }
+        });
+
+        $('#resend_code_box').click(function(e) {
+            e.preventDefault();
+            $('#sendVerificationBtn').click();
+        });
+
+        $("#password_change_form").submit(function (e) {
+            e.preventDefault();
+            $(".pre-loader").css("display", "flex");
+            $(".pre-loader").show();
+
+            var formData = $(this).serializeArray();
+            const sendVerificationBtn = document.getElementById('sendVerificationBtn');
+            const enterVerificationContainer = document.getElementById('enterVerificationContainer');
+            const enterVerificationOverlay = document.getElementById('enterVerificationOverlay');
+            const changePasswordMain = document.getElementById('changePasswordMain');
+
+            $.ajax({
+                type: "POST",
+                url: "{% url 'send_change_password_otp' %}",
+                data: formData,
+                success: function (response) {
+                    $(".pre-loader").hide();
+                    enterVerificationContainer.style.display = 'block';
+                    enterVerificationOverlay.style.display = 'block';
+                    changePasswordMain.style.display = 'none';
+                },
+                error: function (error) {
+                    $(".pre-loader").hide();
+                    var errorMessage = error.responseJSON.error;
+                    var trimmedErrorMessage = errorMessage.substring(2, errorMessage.length - 2);
+                    if (errorMessage == "Passwords do not match. Please try again.") {
+                        $(".login_error_message .password_change_form_error").text("*" + errorMessage);
+                    } else {
+                        $(".login_error_message .password_change_form_error").text("*" + trimmedErrorMessage);
+                    }
+                }
+            });
+        });
+
+        $("#otp-form").submit(function (e) {
+            e.preventDefault();
+            $(".pre-loader").show();
+            
+            const enterVerificationContainer = document.getElementById('enterVerificationContainer');
+            const passwordChangeContainer = document.getElementById('passwordChangeContainer');
+            const enterVerificationOverlay = document.getElementById('enterVerificationOverlay');
+
+            var formData = $(this).serializeArray();
+
+            $.ajax({
+                type: "POST",
+                url: "{% url 'validate_change_password_otp' %}",
+                data: formData,
+                success: function (response) {
+                    $(".pre-loader").hide();
+                    $("#otp-form")[0].reset();
+                    passwordChangeContainer.style.display = 'block';
+                    enterVerificationContainer.style.display = 'none';
+                    enterVerificationOverlay.style.display = 'block';
+                },
+                error: function (error) {
+                    $(".pre-loader").hide();
+                    $("#otp-form")[0].reset();
+                    var errorMessage = error.responseJSON.error;
+                    $(".login_error_message .otp_form_error").text("*" + errorMessage);
+
+                }
+            });
+        });
+
+
+    </script>
+{% endblock %}

@@ -1,0 +1,1247 @@
+@import url('https://fonts.googleapis.com/css2?family=Albert+Sans:wght@100;200;300;400;500;600;700;800;900&display=swap');
+
+* {
+    padding: 0;
+    margin: 0;
+    box-sizing: border-box;
+    /* outline: red solid 1px; */
+}
+#notification {
+    position: fixed;
+    display:none;
+    top: 90px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: auto;
+    background-color: #F8F8F8;
+    font-weight: bold;
+    color: #001F8B;
+    text-align: center;
+    border-radius: 8px;
+    border: solid 2px #001F8B;
+    padding: 10px;
+    z-index: 999999999;
+}
+/* color #F899FA */
+
+.overall_header {
+    top: 0;
+    width: 100%;
+}
+
+.overall_header .header_main {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin: 12px 30px; 
+    height: 4rem;
+}
+
+.header_logo {
+    padding-left: 30px;
+}
+
+.header_main .nav_bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: relative;
+}
+
+.header_main .nav_bar li {
+    display: flex;
+    align-items: center;
+    padding: 10px 20px;
+    list-style: none;
+    gap: 8px;
+}
+
+.nav_bar li a {
+    font-family: 'Albert Sans', sans-serif;
+    font-size: 20px;
+    font-weight: 700;
+    line-height: 24px;
+    letter-spacing: 0.30000001192092896px;
+    color: #001F8B;  
+    text-decoration: none; 
+    transition: 2s ease; 
+    /* transition: 0.5s ease;  */
+    /* position: relative;  */
+}
+
+/* .nav_bar li a::after {
+    content: "";
+    position: absolute;
+    width: 0;
+    height: 1px; 
+    bottom: 0;
+    left: 0;
+    background-color: #001F8B; 
+    transition: width 0.3s; 
+}  */
+
+.nav_bar li a.active {
+    border-bottom: 2px solid #001F8B;
+    width: 100%;
+    border-radius: 1px;
+    transition: 2s ease;
+} 
+
+/* .nav_bar  li:hover a::after,
+.nav_bar  li.active a::after {
+  width: 100%;
+} */
+
+/* .nav_bar li a {
+    font-family: 'Albert Sans', sans-serif;
+    font-size: 20px;
+    font-weight: 700;
+    line-height: 24px;
+    letter-spacing: 0.30000001192092896px;
+    color: #001F8B;  
+    text-decoration: none; 
+    transition: 0.5s ease;  
+    position: relative; 
+} */
+
+/* Add underline when link is focused */
+/* .nav_bar li a:focus::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    bottom: -2px; 
+    width: 100%;
+    height: 2px;
+    background-color: #001F8B;
+} */
+
+/* .nav_bar li a.active::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    bottom: -2px; 
+    width: 100%;
+    height: 2px;
+    background-color: #001F8B;
+} */
+
+/* .nav_bar li .active {
+    border-bottom: 2px solid #001F8B;
+    width: 100%;
+    border-radius: 1px;
+    transition: 0.5s ease;
+} */
+
+
+.header_main .avatar_box {
+    display: flex;
+    align-items: center;
+}
+
+.avatar_box img {
+    margin-right: 10px;
+}
+
+.avatar_box .account_box a {
+    font-family: 'Albert Sans', sans-serif;
+    font-size: 20px;
+    font-weight: 700;
+    line-height: 24px;
+    letter-spacing: 0.30000001192092896px;
+    color: #001F8B;
+    cursor: pointer; 
+    text-decoration: none;
+    transition: all 200ms ease;
+}
+
+.avatar_box .account_box a:hover {
+    opacity: .7;
+}
+
+.avatar_box .profile-con {
+    background: #fff;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    width: 10rem;
+    border-radius: 7px;
+    border: 1px solid gray;
+    display: none;
+    position: absolute;
+    top: 10%; 
+    right: 1rem;
+    z-index: 9;
+    padding-top: 5px;
+    padding-bottom: 5px;
+    text-align: start;
+}
+
+.profile-con a {
+    display: block;
+    text-decoration: none;
+    color: #000000;
+    font-family: 'Albert Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    line-height: 17px;
+    letter-spacing: 0.30000001192092896px;
+    padding: 9px 0;
+    width: 100%;
+    background-color: #fff;
+    transition: background-color 0.3s, color 0.3s;
+    padding-left: 10px;
+}
+
+.profile-con a:hover {
+    background-color: #001F8B;
+    color: #fff;
+}
+
+.Border {
+    border: none; 
+    height: 1px; 
+    background-color: #ccc;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+
+/* main content */
+.main_content_container {
+    width: 100%;
+    padding-left: 40px;
+    margin-top: 4rem;
+    position: relative;
+}
+
+.main_content_container .add_money-box {
+    position: absolute;
+    top: 1.3rem;
+    right: 0;
+}
+
+.add_money-box button .plus_image {
+    margin-right: 5px;
+}
+
+.add_money-box button .plus_image img {
+    width: 18px;
+    height: 18px;
+}
+
+.add_money-box a {
+    font-family: 'Albert Sans', sans-serif;
+    font-size: 16px;
+    font-weight: 500;
+    line-height: 20px;
+    letter-spacing: 0.30000001192092896px;
+    text-decoration: none;
+    background: #fff;
+    color: #001F8B;
+    border-radius: 5px;
+    border: 1px solid gray;
+    padding: 6px 10px;
+    transition: all 200ms ease;
+    display: flex;
+    align-items: center;
+}
+
+.add_money-box a:hover {
+    opacity: .7;
+}
+
+.main_content_container .message_logo {
+    position: absolute;
+    top: 79%;
+    left: 88%;
+    cursor: pointer;
+}
+
+.main_content_container .main_head_box {
+    display: grid;
+    /* grid-template-columns: 35% 65%; */
+    grid-template-columns: 40% 60%;
+}
+
+.main_head_box .virtual_card_head {
+    width: 75%;
+}
+
+.virtual_card_head .visible-text_box {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    margin-left: 3rem;
+}
+
+.virtual_card_head .visible-text_box .h5_show_text-box h5 {
+    font-family: 'Albert Sans', sans-serif;
+    font-size: 16px;
+    font-weight: 700;
+    line-height: 19px;
+    letter-spacing: 0.30000001192092896px;
+    color: #000000;  
+}
+
+.virtual_card_head .visible-text_box .eye-icon-hide {
+    padding-top: 8px; 
+} 
+
+.main_head_box .container {
+    padding: 1rem 0;
+}
+
+/* SWIPER CAROUSEL STYLINGS */
+.cards-swiper-container {
+    width: 100%;
+    height: fit-content;
+    margin: auto;
+    position: relative;
+    overflow: hidden;
+}
+
+.cards-swiper-container .swiper-slide {
+    font-size: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.cards-swiper-container .swiper-button-next, .swiper-button-prev {
+    border: solid 1px #000;
+    background-color: #FFF;
+    border-radius: 200px;
+    color: #333 !important;
+    height: 30px !important;
+    width: 30px;
+    position: absolute;
+}
+
+.cards-swiper-container .swiper-button-next:after, 
+.cards-swiper-container .swiper-button-prev:after {
+    font-family: swiper-icons;
+    font-size: 10px;
+    text-transform: none!important;
+    letter-spacing: 0;
+    font-variant: initial;
+    line-height: 1;
+}
+
+.Bank_image-icon .virtual_card_valid-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    gap: 10px;
+    padding-top: 3rem;
+    padding-left: 15px;
+}
+
+.virtual_card_valid-container .virtual-account_number {
+    padding-top: 0.7rem;
+} 
+
+.virtual_card_valid-container .virtual-account_number h3 {
+    color:#F899FA;
+    font-family: 'Albert Sans', sans-serif;
+    font-size: 16px;
+    font-weight: 700;
+    line-height: 24px;
+    letter-spacing: 0.30000001192092896px;
+} 
+
+.virtual_card_valid-container .thru_cvv_box {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.thru_cvv_box .valid-text p {
+    font-family: 'Albert Sans', sans-serif;
+    font-size: 16px;
+    font-weight: 700;
+    line-height: 24px;
+    letter-spacing: 0.30000001192092896px;
+    color: #a6a6a6;
+}
+
+.thru_cvv_box .valid-text .year_span {
+    font-family: 'Albert Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    line-height: 20px; 
+    letter-spacing: 0.30000001192092896px;
+    color: #fff;
+}
+
+.thru_cvv_box .valid-cvv_box .valid-cvv_text {
+    font-family: 'Albert Sans', sans-serif;
+    font-size: 16px;
+    font-weight: 700;
+    line-height: 24px;
+    letter-spacing: 0.30000001192092896px;
+    color: #a6a6a6;
+}
+
+.thru_cvv_box .valid-cvv_box .valid-cvv_span {
+    font-family: 'Albert Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    line-height: 20px;
+    letter-spacing: 0.30000001192092896px;
+    color: #fff;
+}
+
+.account_hoder-name h3 {
+    font-family: 'Albert Sans', sans-serif;
+    font-size: 17px;
+    font-weight: 700;
+    line-height: 24px;
+    letter-spacing: 0.30000001192092896px;
+    color: #fff;
+}
+
+.virtual_card_head .view_box {
+    text-align: center;
+    margin-top: 2rem;
+}
+
+.virtual_card_head .view_box .view_details {
+    font-family: 'Albert Sans', sans-serif;
+    font-size: 16px;
+    font-weight: 500;
+    line-height: 19px;
+    letter-spacing: 0.30000001192092896px;
+    color: #001F8B; 
+    background: #fff;
+    border-radius: 5px;
+    border: 1px solid gray;
+    padding: 8px 16px;
+    transition: all 200ms ease;
+    text-decoration: none;  
+}
+
+.virtual_card_head .view_box .view_details:hover {
+    opacity: .7;
+}
+
+.virtual_card_head .total_con_box {
+    margin-top: 2rem;
+}
+
+.total_con_box .total_card_main {
+    display: flex;
+    align-items: center;
+    gap: 5.3rem;
+    border-top: 1px solid gray;
+    padding: 1rem 0;
+}
+
+.total_card_main p {
+    font-family: 'Albert Sans', sans-serif;
+    font-size: 16px;
+    font-weight: 500;
+    line-height: 19px;
+    letter-spacing: 0.30000001192092896px;
+    color: #575454;    
+}
+
+.total_card_main span {
+    font-family: 'Albert Sans', sans-serif;
+    font-size: 16px;
+    font-weight: 700;
+    line-height: 19px;
+    letter-spacing: 0.30000001192092896px;
+    color: #575454;    
+}
+
+.total_con_box .total_transaction_box {
+    display: flex;
+    align-items: center;
+    gap: 30px;
+    border-top: 1px solid gray;
+    border-bottom: 1px solid gray;
+    padding: 0.9rem 0 1rem;
+}
+
+.total_transaction_box p {
+    font-family: 'Albert Sans', sans-serif;
+    font-size: 16px;
+    font-weight: 500;
+    line-height: 19px;
+    letter-spacing: 0.30000001192092896px;
+    color: #575454;
+}
+
+.total_transaction_box span {
+    font-family: 'Albert Sans', sans-serif;
+    font-size: 16px;
+    font-weight: 700;
+    line-height: 19px;
+    letter-spacing: 0.30000001192092896px;
+    color: #575454;
+}
+
+
+/* Usa section */
+.usa_container-box {
+    width: 70%;
+    position: relative;
+}
+
+.usa_container-box .usa_main {
+    display: flex;
+    gap: 10px;
+}
+
+.usa_container-box .wallet_box {
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+    margin-top: 1rem;
+}
+
+.wallet_box h4 {
+    font-family: 'Albert Sans', sans-serif;
+    font-size: 16px;
+    font-weight: 500;
+    line-height: 19px;
+    letter-spacing: 0.30000001192092896px;
+    color: #575454;    
+}
+
+.wallet_box h3 {
+    font-family: 'Albert Sans', sans-serif;
+    font-size: 16px;
+    font-weight: 500;
+    line-height: 19px;
+    letter-spacing: 0.30000001192092896px;
+    color: #575454;    
+}
+
+.usa_main .dollar_box h3 {
+    font-family: 'Albert Sans', sans-serif;
+    font-size: 18px;
+    font-weight: 500;
+    line-height: 19px;
+    letter-spacing: 0.30000001192092896px;
+    color: #000000;    
+}
+
+.usa_main .dollar_box h4 {
+    font-family: 'Albert Sans', sans-serif;
+    font-size: 16px;
+    font-weight: 500;
+    line-height: 19px;
+    letter-spacing: 0.30000001192092896px;
+    color: #000000;    
+}
+
+.dollar_box .top_cash_dollar {
+    display: flex;
+    align-items: center;
+    gap: 3px;
+}
+
+.dollar_box .last_updated-main p {
+    font-family: 'Albert Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    line-height: 16px;
+    letter-spacing: 0.30000001192092896px;
+    color: #575454;    
+}
+
+.usa_container-box .history_box {
+    display: flex;
+    align-items: center;
+    margin-top: 2rem;
+    gap: 20px; 
+}
+
+.history_box .history_btn_box button.active2 {
+    font-family: 'Albert Sans', sans-serif;
+    font-size: 17px;
+    font-weight: 500;
+    line-height: 20px;
+    letter-spacing: 0.30000001192092896px;
+    background-color: #001F8B;
+    color: #FFFFFF;
+    border: none;
+    border-radius: 5px;
+    border: 1px solid gray;
+    padding: 8px 16px;
+    cursor: pointer; 
+    transition: all 200ms ease; 
+}
+
+.history_box .history_btn_box button {
+    font-family: 'Albert Sans', sans-serif;
+    font-size: 17px;
+    font-weight: 500;
+    line-height: 20px;
+    letter-spacing: 0.30000001192092896px;
+    color: #001F8B;
+    background-color: #FFFFFF;
+    border: none;
+    border-radius: 5px;
+    border: 1px solid gray;
+    padding: 8px 16px;
+    cursor: pointer; 
+    transition: all 200ms ease; 
+}
+
+.history_box .history_btn_box button:hover {
+    opacity: .7;
+}
+
+.usa_container-box .paypal_container {
+    margin-top: 2rem;
+}
+
+.paypal_main {
+    display: flex;
+    flex-direction: column;
+}
+
+.paypal_main p {
+    font-family: 'Albert Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    line-height: 16px;
+    letter-spacing: 0.30000001192092896px;
+    color: #575454;    
+}
+
+.paypal_main .paypal_head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border: 1px solid gray;
+    border-radius: 10px;
+    margin-top: 0.4rem;
+    padding: 0.3rem 1rem 0.3rem 0.3rem;
+}
+
+.paypal_head .paypal_box-icon_head {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.paypal_text-box h4 {
+    font-family: 'Albert Sans', sans-serif;
+    font-size: 16px;
+    font-weight: 600;
+    line-height: 19px;
+    letter-spacing: 0.30000001192092896px;
+    color: #000000;    
+}
+
+.paypal_text-box p {
+    font-family: 'Albert Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    line-height: 16px;
+    letter-spacing: 0.30000001192092896px;
+    color: #A6A6A6;    
+}
+
+.paypal_head .money_box {
+    display: flex;
+    align-items: center;
+}
+
+.money_box .money_main_cash  {
+    display: flex;
+    align-items: center;
+    gap: 3px;
+}
+
+.money_main_cash h4 {
+    font-family: 'Albert Sans', sans-serif;
+    font-size: 18px;
+    font-weight: 500;
+    line-height: 22px;
+    letter-spacing: 0.30000001192092896px;
+    color: #D03020;    
+}
+
+
+/* virtual card funding */
+.virtual_card_funding {
+    margin-top: 1rem;
+}
+
+.virtual_card_funding p {
+    font-family: 'Albert Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    line-height: 16px;
+    letter-spacing: 0.30000001192092896px;
+    color: #575454
+}
+
+.virtual_card_funding .virtual_card_funding_head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border: 1px solid gray;
+    border-radius: 10px;
+    margin-top: 0.4rem;
+    padding: 0.3rem 1rem 0.3rem 0.3rem;
+}
+
+.virtual_card_funding_box-icon_head {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.virtual_card_funding_text-box h4 {
+    font-family: 'Albert Sans', sans-serif;
+    font-size: 16px;
+    font-weight: 600;
+    line-height: 19px;
+    letter-spacing: 0.30000001192092896px;
+    color: #000000; 
+}
+
+.virtual_card_funding_text-box p {
+    font-family: 'Albert Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    line-height: 16px;
+    letter-spacing: 0.30000001192092896px;
+    color: #A6A6A6;
+}
+
+.virtual_card_funding_head .virtual_card_funding_money_box {
+    display: flex;
+    align-items: center;
+}
+
+.virtual_card_funding_money_box .virtual_card_funding_main_cash {
+    display: flex;
+    align-items: center;
+    gap: 3px;
+}
+
+.virtual_card_funding_main_cash h4 {
+    font-family: 'Albert Sans', sans-serif;
+    font-size: 18px;
+    font-weight: 500;
+    line-height: 22px;
+    letter-spacing: 0.30000001192092896px;
+    color: #001F8B;
+}
+
+
+
+/* virtual card funding 2 */
+.virtual_card_funding2,
+.virtual_card_funding3 {
+    margin-top: 1rem;
+}
+
+.virtual_card_funding2 p,
+.virtual_card_funding3 p {
+    font-family: 'Albert Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    line-height: 16px;
+    letter-spacing: 0.30000001192092896px;
+    color: #575454
+}
+
+.virtual_card_funding2 .virtual_card_funding2_head,
+.virtual_card_funding3 .virtual_card_funding3_head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border: 1px solid gray;
+    border-radius: 10px;
+    margin-top: 0.4rem;
+    padding: 0.3rem 1rem 0.3rem 0.3rem;
+}
+
+.virtual_card_funding2_box-icon_head,
+.virtual_card_funding3_box-icon_head  {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.virtual_card_funding2_text-box h4,
+.virtual_card_funding3_text-box h4 {
+    font-family: 'Albert Sans', sans-serif;
+    font-size: 16px;
+    font-weight: 600;
+    line-height: 19px;
+    letter-spacing: 0.30000001192092896px;
+    color: #000000; 
+}
+
+.virtual_card_funding2_text-box p,
+.virtual_card_funding3_text-box p {
+    font-family: 'Albert Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    line-height: 16px;
+    letter-spacing: 0.30000001192092896px;
+    color: #A6A6A6;
+}
+
+.virtual_card_funding2_head .virtual_card_funding2_money_box,
+.virtual_card_funding3_head .virtual_card_funding3_money_box {
+    display: flex;
+    align-items: center;
+}
+
+.virtual_card_funding2_money_box .virtual_card_funding2_main_cash,
+.virtual_card_funding3_money_box .virtual_card_funding3_main_cash {
+    display: flex;
+    align-items: center;
+    gap: 3px;
+}
+
+.virtual_card_funding2_main_cash h4,
+.virtual_card_funding3_main_cash h4 {
+    font-family: 'Albert Sans', sans-serif;
+    font-size: 18px;
+    font-weight: 500;
+    line-height: 22px;
+    letter-spacing: 0.30000001192092896px;
+    color: #001F8B;
+}
+
+.binance_main,
+.binance2_main {
+    margin-top: 1rem;
+}
+
+.binance_main p,
+.binance2_main p  {
+    font-family: 'Albert Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    line-height: 16px;
+    letter-spacing: 0.30000001192092896px;
+    color: #575454;
+}
+
+.binance_main .binance_head,
+.binance2_main .binance2_head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border: 1px solid gray;
+    border-radius: 10px;
+    margin-top: 0.4rem;
+    padding: 0.3rem 1rem 0.3rem 0.3rem;
+}
+
+.binance_head .binance_box-icon_head,
+.binance2_head .binance2_box-icon_head {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.binance_text-box h4,
+.binance2_text-box h4 {
+    font-family: 'Albert Sans', sans-serif;
+    font-size: 16px;
+    font-weight: 600;
+    line-height: 19px;
+    letter-spacing: 0.30000001192092896px;
+    color: #000000; 
+}
+
+.binance_text-box p,
+.binance2_text-box p {
+    font-family: 'Albert Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    line-height: 16px;
+    letter-spacing: 0.30000001192092896px;
+    color: #A6A6A6; 
+}
+
+.binance_head .binance_money_box,
+.binance2_head .binance2_money_box {
+    display: flex;
+    align-items: center;
+}
+
+.binance_money_box .binance_money_main_cash,
+.binance2_money_box .binance2_money_main_cash  {
+    display: flex;
+    align-items: center;
+    gap: 3px;
+}
+
+.binance_money_main_cash h4,
+.binance2_money_main_cash h4 {
+    font-family: 'Albert Sans', sans-serif;
+    font-size: 18px;
+    font-weight: 500;
+    line-height: 22px;
+    letter-spacing: 0.30000001192092896px;
+    color: #D03020; 
+}
+
+.usa_container-box .load_more_trans-box {
+    text-align: center;
+    margin: 2rem;
+}
+
+.load_more_trans-box  button {
+    font-family: 'Albert Sans', sans-serif;
+    font-size: 17px;
+    font-weight: 500;
+    line-height: 20px;
+    letter-spacing: 0.30000001192092896px;
+    color: #001F8B;
+    background: #fff;
+    border: none;
+    border-radius: 5px;
+    border: 1px solid #001F8B;
+    padding: 7px 16px;
+    cursor: pointer;
+    transition: all 200ms ease;    
+}
+
+.load_more_trans-box  button:hover {
+    opacity: .7;
+}
+
+
+
+/* CHANGE PASSWORD SECTION */
+.change_password_container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    /* height: 70vh; */
+    margin-top: 5rem;
+}
+
+.change_password_container .change_password_main {
+    display: flex;
+    flex-direction: column;
+    background: #fff;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    width: 27rem;
+    border-radius: 7px;
+    padding: 0.9rem 1em;
+}
+
+.change_password_main .change_pass_box {
+    border-bottom: 1px solid gray;
+    padding-bottom: 0.5rem;
+}
+
+.change_password_main .change_pass_box h4 {
+    font-family: 'Albert Sans', sans-serif;
+    font-size: 20px;
+    font-weight: 700;
+    line-height: 24px;
+    letter-spacing: 0em;
+    color: #001F8B;    
+}
+
+.change_password_main .form_password {
+    display: flex;
+    flex-direction: column;
+    margin-top: 1rem;
+}
+
+.form_password .new_password_box {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 1rem;
+}
+
+.form_password .new_password_box label,
+.form_password .confirm_password_box label {
+    font-family: 'Albert Sans', sans-serif;
+    font-size: 16px;
+    font-weight: 500;
+    line-height: 24px;
+    letter-spacing: 0em;
+    color: #A6A6A6;    
+}
+
+.new_password_box .new_password_input,
+.confirm_password_box .confim_password_input {
+    border: 1px solid gray;
+    border-radius: 10px;
+    padding: 5px 7px;
+    display: flex;
+    align-items: center;
+}
+
+.new_password_box .new_password_input input,
+.confirm_password_box .confim_password_input input {
+    border: none;
+    outline: none;
+    font-size: 15px;
+    font-family:  'Albert Sans', sans-serif;
+    font-weight: 500;
+    color: #000000;
+}
+
+.new_password_box .new_password_input span,
+.confirm_password_box .confim_password_input span {
+    cursor: pointer;
+}
+
+.form_password .confirm_password_box {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 1rem;
+}
+
+.change_password_main .send_verification_box {
+    text-align: center;
+    padding: 1rem 0 0.3rem;
+}
+
+.change_password_main .send_verification_box button {
+    font-family: 'Albert Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    line-height: 17px;
+    letter-spacing: 0.30000001192092896px;
+    color: #FFFFFF;
+    background: #001F8B;
+    border: none;
+    border-radius: 5px;
+    padding: 7px 16px;
+    cursor: pointer;
+    transition: all 200ms ease;    
+}
+
+.change_password_main .send_verification_box button:hover {
+    opacity: .7;
+}
+
+.change_password_messsage_logo {
+   padding-right: 3rem;
+   justify-content: flex-end;
+   align-items: flex-end;
+   display: flex;
+   height: 30vh;
+}
+
+
+
+/* OTP OVERLAY */
+.enter_verification_overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 10;
+} 
+
+
+/* OTP SECTION */
+.enter_verification-container {
+    display: none;
+    z-index: 11;
+}
+
+.enter_verification-container .enter_verification-main-head {
+    display: flex;
+    flex-direction: column;
+    background: #fff;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    width: 32rem;
+    height: 22rem;
+    border-radius: 7px;
+    align-items: center;
+    padding: 2rem 0; 
+}
+
+.enter_verification-main-head .enter_verification-head-title {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+}
+
+.enter_verification-main-head .enter_verification-head-title h2 {
+    font-family: 'Albert Sans', sans-serif;
+    /* font-size: 35px; */
+    font-size: 30px;
+    font-weight: 700;
+    line-height: 24px;
+    letter-spacing: 0em;
+    color: #000000;    
+}
+
+.enter_verification-main-head .enter_verification-head-title p {
+    font-family: 'Albert Sans', sans-serif;
+    font-size: 17px;
+    font-weight: 500;
+    line-height: 24px;
+    letter-spacing: 0em;
+    color: #000000; 
+    padding-top: 1.5rem;   
+}
+
+.enter_verification-main-head .otp_form {
+    width: 100%;
+    display: flex;
+    gap: 20px;
+    align-items: center;
+    justify-content: center;
+    padding-top: 2rem;
+}
+
+.enter_verification-main-head .otp_form input {
+    border: none;
+    background-color: #D9D9D9;
+    color: #000000;
+    font-size: 20px;
+    text-align: center;
+    padding: 10px;
+    width: 100%;
+    /* max-width: 70px; 
+    height: 70px;*/
+    max-width: 50px;
+    height: 40px;
+    border-radius: 4px;
+    border: none;
+    border: 1px solid gray;
+}
+
+.enter_verification-main-head .otp_form input:focus-visible {
+    outline: 1px solid royalblue;
+}
+/* 
+#otp-form input.filled {
+    outline: 2px solid rgb(7, 192, 99);
+} */
+
+.enter_verification-main-head .submit_otp_btn-box  {
+    margin-top: 2rem;
+}
+
+
+.enter_verification-main-head .submit_otp_btn-box button {
+    font-family: 'Albert Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    line-height: 17px;
+    letter-spacing: 0.30000001192092896px;    
+    cursor: pointer;
+    display: inline-block;
+    background: #001F8B;
+    color: #FFFFFF;
+    padding: .9rem 2.4rem;
+    border-radius: 5px;
+    border: none;
+    transition: all 200ms ease;
+}
+
+.submit_otp_btn-box button:hover {
+    opacity: .7;
+}
+
+.enter_verification-main-head .submit_otp_btn-box button:disabled {
+    background-color: #CCC;
+    cursor: not-allowed;
+}
+
+.enter_verification-main-head .resend_code_box {
+    margin-top: 1rem;
+    /* margin-bottom: 1rem; */
+}
+
+.enter_verification-main-head .resend_code_box span {
+    font-family: 'Albert Sans', sans-serif;
+    font-size: 17px;
+    font-weight: 500;
+    line-height: 24px;
+    letter-spacing: 0em;
+    color: #001F8B; 
+    cursor: pointer;
+    text-decoration: underline; 
+    transition: all 300ms ease;  
+}
+
+.enter_verification-main-head .resend_code_box span:hover {
+    opacity: .8;
+}
+
+
+
+/* PASSWORD CHANGE SECTION */
+.password_change-container {
+   display: none;
+   z-index: 11;
+}
+
+.password_change-container .password_change-main-head {
+    display: flex;
+    flex-direction: column;
+    background: #fff;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    width: 29rem;
+    border-radius: 7px;
+    align-items: center;
+}
+
+.password_change-main-head .password_change-image-box {
+    padding: 1rem 0;
+}
+
+.password_change-main-head .password_change-head-title {
+    text-align: center;
+}
+
+.password_change-main-head .password_change-head-title h2 {
+    font-family: 'Albert Sans', sans-serif;
+    font-size: 30px;
+    font-weight: 700;
+    line-height: 24px;
+    letter-spacing: 0em;
+    color: #000000;    
+}
+
+.password_change-main-head .password_change-head-title p {
+    font-family: 'Albert Sans', sans-serif;
+    font-size: 17px;
+    font-weight: 300;
+    line-height: 24px;
+    letter-spacing: 0em;
+    color: #000000;
+    padding-top: 1rem;   
+}
+
+.password_change-main-head .password_change_btn-box {
+    margin: 2rem 0;
+    padding: 1rem 0;
+}
+
+.password_change-main-head .password_change_btn-box a {
+    font-family: 'Albert Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    line-height: 17px;
+    letter-spacing: 0.30000001192092896px;
+    text-decoration: none;
+    color: #FFFFFF; 
+    background: #001F8B;
+    border-radius: 5px;
+    padding: 8px 16px; 
+    transition: all 200ms ease;  
+}
+
+.password_change-main-head .password_change_btn-box a:hover {
+    opacity: .8;
+}

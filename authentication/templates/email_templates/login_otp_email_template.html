@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Bfree Login Verification Code</title>
+  <style>
+    fieldset {
+      border: 5px solid #001F8B;
+      border-radius: 8px;
+    }
+    .otp-btn {
+      font-size: 24px;
+      color: white;
+      margin: 0 auto;
+      text-align: center;
+      background-color: #001F8B;
+      padding: 10px 20px;
+      border-radius: 20px;
+      margin-top: 5px;
+      cursor: pointer;
+      border: none;
+      text-decoration: none;
+    }
+    
+    .link {
+        border-radius: 50%;
+        padding: 10px;
+        text-decoration: none;
+    }
+  </style>
+</head>
+<body>
+  <fieldset>
+    <legend style="display: flex; align-items: center;">&nbsp;
+      <a href="https://accounts.bfree.cards/"><img src="https://accounts.bfree.cards/static/images/logo.png" width="208px" height="69px"></a>
+      &nbsp;
+    </legend>
+    <h2>Bfree Login Verification Code</h2>
+    <p>
+      Hi {{ first_name }} {{ last_name }},
+    </p>
+    <p>
+      To complete your login process and access your Bfree account, please use the following OTP:
+    </p>
+    <br><br>
+    <p class="otp-btn"><strong>{{ login_otp }}</strong></p>
+    <br><br>
+    <p>
+      If you didn't request this OTP, please change your password <a href="https://Bfree.co/auth/passwordreset/">here</a>.
+    </p>
+    <p>
+      This OTP is valid for 5 minutes.
+    </p>
+    <p>
+      Thanks,
+      <br>
+      The Bfree Team.
+    </p>
+    <br>
+  </fieldset>
+</body>
+</html>

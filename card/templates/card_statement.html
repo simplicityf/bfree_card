@@ -1,0 +1,661 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %} Card Statement{% endblock %}
+{% block content %}
+    <style>
+        table {
+          width: 100%;
+          border-collapse: collapse;
+          border-spacing: 0;
+        }
+        
+        th {
+            /* background-color: #f2f2f2; */
+            border: 1px solid #dddddd;
+            padding: 8px;
+            text-align: left;
+            font-family: Albert Sans;
+            font-size: 20px;
+            font-weight: 500;
+            line-height: 24px;
+            letter-spacing: 0.30000001192092896px;
+        }
+        
+        td {
+            border: 1px solid #dddddd;
+            padding: 8px;
+            font-family: Albert Sans;
+            font-size: 17px;
+            font-weight: 400;
+            line-height: 20px;
+            letter-spacing: 0.30000001192092896px;
+            text-align: left;
+        }
+        /* *{
+            outline:1px solid red;
+        } */
+
+        /* @media print {
+          body * {
+            display: none;
+            transform: scale(.9)
+   
+          }
+          table {page-break-inside: avoid;}
+       
+        
+          .acc_statement #acc_substatement2 * {
+            display: block;
+          }
+        
+        } */
+
+        @media print {
+            body * {
+                display: none;
+            }
+
+            table {
+                page-break-inside: avoid;
+                display: table !important;
+            }
+
+            .acc_substatement2,
+            .acc_substatement2 *,
+            .acc_substatement2 *:before,
+            .acc_substatement2 *:after {
+                display: block !important;
+                visibility: visible !important;
+                opacity: 1 !important;
+            }
+        }
+
+        .acc_statement{
+            width: 100%;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 30px 0;
+        }
+        .acc_substatement{
+            width: 90%;
+            min-height: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+        }
+        .acc_substatement .acc_substatement1{
+            display: flex;
+            flex-direction: row-reverse;
+            gap: 20px;
+        }
+        .acc_substatement .acc_substatement1 .choose_time{
+            width: 50%;
+            height: auto;
+        }
+        .acc_substatement .acc_substatement1 .choose_time .choose_time_sub{
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            gap: 25px;
+        }
+        .acc_statement .acc_substatement .acc_substatement1 .choose_time .choose_time_sub .choose_time_head{
+            font-family: Albert Sans;
+            font-size: 20px;
+            font-weight: 500;
+            line-height: 24px;
+            letter-spacing: 0.30000001192092896px;
+            text-align: left;
+        }
+        .acc_statement .acc_substatement .acc_substatement1 .choose_time .choose_time_sub .choose_time_body{
+            display: flex;
+            flex-direction: row;
+            justify-content: space-between;
+        }
+        .acc_statement .acc_substatement .acc_substatement1 .choose_time .choose_time_sub .choose_time_body .choose_time_start{
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        .acc_statement .acc_substatement .acc_substatement1 .choose_time .choose_time_sub .choose_time_body .choose_time_start .choose_time_start_text{
+            font-family: Albert Sans;
+            font-size: 20px;
+            font-weight: 500;
+            line-height: 24px;
+            letter-spacing: 0.30000001192092896px;
+            text-align: left;
+            color: #a6a6a6;
+        }
+        .acc_statement .acc_substatement .acc_substatement1 .choose_time .choose_time_sub .choose_time_body .choose_time_start .choose_time_start_input{
+            width: 234px;
+            height: 48px;
+            padding: 15px;
+            border-radius: 10px;
+            border: 1px solid #D9D9D9;
+            font-family: Albert Sans;
+            font-size: 20px;
+            font-weight: 500;
+            line-height: 24px;
+            letter-spacing: 0.30000001192092896px;
+            text-align: left;
+            text-transform: uppercase;
+            /* color: #000000;
+            background-color: #A6A6A6;
+            opacity: 0.4; */
+        }
+        .acc_statement .acc_substatement .acc_substatement1 .choose_time .choose_time_sub .choose_time_body .choose_time_start .choose_time_start_input:focus{
+            outline: none;
+        }
+        .acc_statement .acc_substatement .acc_substatement1 .choose_time .choose_time_sub .choose_time_body .choose_time_end{
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        .acc_statement .acc_substatement .acc_substatement1 .choose_time .choose_time_sub .choose_time_body .choose_time_end .choose_time_end_text{
+            font-family: Albert Sans;
+            font-size: 20px;
+            font-weight: 500;
+            line-height: 24px;
+            letter-spacing: 0.30000001192092896px;
+            text-align: left;
+            color: #a6a6a6;
+        }
+        .acc_statement .acc_substatement .acc_substatement1 .choose_time .choose_time_sub .choose_time_body .choose_time_end .choose_time_end_input{
+            width: 234px;
+            height: 48px;
+            padding: 15px;
+            border-radius: 10px;
+            border: 1px solid #D9D9D9;
+            font-family: Albert Sans;
+            font-size: 20px;
+            font-weight: 500;
+            line-height: 24px;
+            letter-spacing: 0.30000001192092896px;
+            text-align: left;
+            color: #000000;
+            text-transform: uppercase;
+        }
+        .acc_statement .acc_substatement .acc_substatement1 .choose_time .choose_time_sub .choose_time_body .choose_time_end .choose_time_end_input:focus{
+            outline: none;
+        }
+        .acc_statement .acc_substatement .acc_substatement1 .choose_time .choose_time_sub .choose_time_bottom{
+            display: flex;
+            flex-direction: row;
+            justify-content: flex-end;
+        }
+        .acc_statement .acc_substatement .acc_substatement1 .choose_time .choose_time_sub .choose_time_bottom .choose_time_button{
+            width: 184px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 44px;
+            border: none;
+            border-radius: 10px;
+            background-color: #001F8B;
+            font-family: Albert Sans;
+            font-size: 20px;
+            font-weight: 500;
+            line-height: 24px;
+            letter-spacing: 0.30000001192092896px;
+            color: #fff;
+            cursor: pointer;
+        }
+        .acc_statement .acc_substatement .acc_substatement1 .select_another{
+            width: 50%;
+            height: auto;
+            display: flex;
+            justify-content: flex-end;
+        }
+        .acc_statement .acc_substatement .acc_substatement1 .select_another .select_another_body{
+            width: fit-content;
+            display: flex;
+            flex-direction: column;
+            gap: 35px;
+        }
+        .acc_statement .acc_substatement .acc_substatement1 .select_another .select_another_body .select_another_body_input{
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .acc_statement .acc_substatement .acc_substatement1 .select_another .select_another_body .select_another_body_input .select_another_body_input_text{
+            font-family: Albert Sans;
+            font-size: 20px;
+            font-weight: 500;
+            line-height: 24px;
+            letter-spacing: 0.30000001192092896px;
+            text-align: left;
+        }
+        .acc_statement .acc_substatement .acc_substatement1 .select_another .select_another_body .select_another_body_input .select_another_body_input_el{
+            width: 376px;
+            height: 48px;
+            border: 1px solid #D9D9D9;
+            border-radius: 10px;
+            font-family: Albert Sans;
+            font-size: 20px;
+            font-weight: 500;
+            line-height: 24px;
+            letter-spacing: 0.30000001192092896px;
+            text-align: left;
+            padding: 0px 9px;
+        }
+        .acc_statement .acc_substatement .acc_substatement1 .select_another .select_another_body .select_another_body_input .select_another_body_input_el:focus{
+            outline: none;
+        }
+        .acc_statement .acc_substatement .acc_substatement1 .select_another .select_another_body .select_another_body_button{
+            display: flex;
+            flex-direction: row;
+            gap: 20px;
+            justify-content: flex-end;
+        }
+        .acc_statement .acc_substatement .acc_substatement1 .select_another .select_another_body .select_another_body_button .select_another_download{
+            width: 184px;
+            height: 44px;
+            border: none;
+            border-radius: 10px;
+            background-color: #001F8B;
+            color: #fff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: row;
+            gap: 6px;
+            font-family: Albert Sans;
+            font-size: 20px;
+            font-weight: 500;
+            line-height: 24px;
+            letter-spacing: 0.30000001192092896px;
+            cursor: pointer;
+        }
+        .acc_statement .acc_substatement .acc_substatement1 .select_another .select_another_body .select_another_body_button .select_another_print{
+            width: 184px;
+            height: 44px;
+            border: 1px solid #D9D9D9;
+            border-radius: 10px;
+            background-color: transparent;
+            color: #000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: row;
+            gap: 6px;
+            font-family: Albert Sans;
+            font-size: 20px;
+            font-weight: 500;
+            line-height: 24px;
+            letter-spacing: 0.30000001192092896px;
+            cursor: pointer;
+        }
+        .acc_substatement2{
+            width: 100%;
+            border: 1px solid #A6A6A6;
+            height: auto;
+            padding: 20px;
+            margin-bottom: 80px;
+            background-image: url('{% static "images/receipt_bg.png" %}');
+            background-position: center;
+            background-size: cover;
+            background-repeat: no-repeat;
+        }
+        .acc_substatement2 .acc_substatement2_logo{
+            width: 100%;
+            height: 80px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            margin-bottom: 15px;
+        }
+       .acc_substatement2 .acc_substatement2_logo .acc_substatement2_head{
+            font-family: Albert Sans;
+            font-size: 20px;
+            font-weight: 500;
+            line-height: 24px;
+            letter-spacing: 0.30000001192092896px;
+            text-align: left;
+            color: #D03020;
+        }
+        .acc_substatement2 .acc_substatement2_body{
+            display: flex;
+            flex-direction: row;
+            gap: 30px;
+        }
+        .acc_substatement2 .acc_substatement2_body .acc_substatement2_body_con1_mainText{
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        .acc_substatement2 .acc_substatement2_body .acc_substatement2_body_con1_mainText .con1_text{
+            font-family: Albert Sans;
+            font-size: 17px;
+            font-weight: 500;
+            line-height: 24px;
+            letter-spacing: 0.30000001192092896px;
+            text-align: left;    
+        }
+       .acc_substatement2 .acc_substatement2_body .acc_substatement2_body_con1_mainTexts{
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        .acc_substatement2 .acc_substatement2_body .acc_substatement2_body_con1_mainTexts .con1_mainText{
+            font-family: Albert Sans;
+            font-size: 17px;
+            font-weight: 500;
+            line-height: 24px;
+            letter-spacing: 0.30000001192092896px;
+            text-align: left;
+        }
+       .acc_substatement2 .acc_substatement2_tableHead{
+            display: flex;
+            flex-direction: column;
+            /* gap: 14px; */
+            margin-top: 20px;
+            border: 1px solid #D9D9D9;
+            height: auto;
+        }
+        .acc_substatement2 .acc_substatement2_tableHead .acc_substatement2_subtableHead{
+            width: 100%;
+            height: 40px;
+            display: flex;
+            flex-direction: row;
+            gap: 15px;
+            align-items: center;
+            background-color: #f2f2f2;
+            font-family: Albert Sans;
+            font-size: 20px;
+            font-weight: 500;
+            line-height: 24px;
+            letter-spacing: 0.30000001192092896px;
+            text-align: left;
+            padding-left: 15px;
+            /* opacity: 0.1; */
+        }
+        .acc_substatement2 .acc_substatement2_table{
+            width: 100%;
+            border-collapse: collapse;
+            border-spacing: 0;
+        }
+        .acc_substatement2 .acc_substatement2_table .acc_substatement2_thead{
+            width: 100%;
+        }
+        .acc_substatement2 .acc_substatement2_table .acc_substatement2_thead .acc_substatement2_thead_tr th {
+            border: 1px solid #dddddd;
+            padding: 8px;
+            text-align: left;
+        }
+        .acc_substatement2 .stamp{
+            /* position: absolute; */
+            display: flex;
+            flex-direction: column;
+            margin-top: -190px;
+            margin-right: 250px;
+            justify-content: flex-end;
+            align-items: flex-end;
+        }
+
+    </style>
+    <!-- pdf libraray -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.3/html2pdf.bundle.min.js"></script>
+    <div class="acc_statement">
+        <div class="acc_substatement">
+            <div class="acc_substatement1">
+                {% comment %}<div class="choose_time">
+                    <div class="choose_time_sub">
+                        <div class="choose_time_head">
+                            Choose a timeframe for your statement.
+                        </div>
+                        <div class="choose_time_body">
+                            <div class="choose_time_start">
+                                <span class="choose_time_start_text">Start Date</span>
+                                <input type="date" name="" id="start_date" class="choose_time_start_input">
+                            </div>
+                            <div class="choose_time_end">
+                                <span class="choose_time_end_text">End Date</span>
+                                <input type="date" name="" id="end_date" class="choose_time_end_input">
+                            </div>
+                        </div>
+                        <div class="choose_time_bottom">
+                            <button class="choose_time_button" onclick="generate()">
+                                Generate
+                            </button>
+                        </div>
+                    </div>
+                </div>{% endcomment %}
+                <div class="select_another">
+                    <div class="select_another_body">
+                        {% comment %}<div class="select_another_body_input">
+                            <span class="select_another_body_input_text">
+                                Select another card:
+                            </span>
+                            <select name="" id="" class="select_another_body_input_el">
+                                <option value="44236*******4417">44236*******4417</option>
+                                <option value="44239*******2427">44239*******2427</option>
+                                <option value="44234*******5416">44234*******5416</option>
+                            </select>
+                        </div>{% endcomment %}
+                        <div class="select_another_body_button">
+                            <!-- <button class="select_another_download" id="downloadPdf">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M6 20H18" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
+                                    <path d="M12 16V4" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                    <path d="M16 12C16 12 13.054 16 12 16C10.9459 16 8 12 8 12" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                </svg>  
+                                <span class="select_another_download_text">
+                                    Download
+                                </span>
+                            </button> -->
+                            <button class="select_another_print" id="downloadPdf">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M6 20H18" stroke="black" stroke-width="1.5" stroke-linecap="round"/>
+                                    <path d="M12 16V4" stroke="black" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                    <path d="M16 12C16 12 13.054 16 12 16C10.9459 16 8 12 8 12" stroke="black" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                </svg>                                     
+                                <span class="select_another_print_text">
+                                    Download
+                                </span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+            <div class="acc_substatement2" id="card_statement">
+                <div class="acc_substatement2_logo">
+                    <div class="acc_substatement2_head">YOUR BFREE CARD STATEMENT</div>
+                    <img src="{% static 'images/logo.png' %}" alt="Bfree logo">
+                </div>
+                <div class="acc_substatement2_body">
+                    
+                    <div class="acc_substatement2_body_con1_mainText">
+                        <span class="con1_text">
+                            Card Holder:
+                        </span>
+                        <span class="con1_text">
+                            Email Address:
+                        </span>
+                        <span class="con1_text">
+                            Start Date:
+                        </span>
+                        <span class="con1_text">
+                            End Date:
+                        </span>
+                    </div>
+                    <div class="acc_substatement2_body_con1_mainTexts">
+                        <span class="con1_mainText">
+                            {{first_name}} {{last_name}}
+                        </span>
+                        <span class="con1_mainText">
+                            {{email}}
+                        </span>
+                        <span class="con1_mainText">
+                            {{start_date}}
+                        </span>
+                        <span class="con1_mainText">
+                            {{end_date}}
+                        </span>
+                    </div>
+                    
+                    <div class="acc_substatement2_body_con1_mainText">
+                        <span class="con1_text">
+                            Card Number:
+                        </span>
+                        <span class="con1_text">
+                            Expiry Date:
+                        </span>
+                        <span class="con1_text">
+                            Card Brand:
+                        </span>
+                        <span class="con1_text">
+                            Currency:
+                        </span>
+                        <span class="con1_text">
+                            Billing Address:
+                        </span>
+                        <span class="con1_text">
+                            City / State:
+                        </span>
+                        <span class="con1_text">
+                            Country:
+                        </span>
+                        <span class="con1_text">
+                            Zip Code:
+                        </span>
+                    </div>
+                    <div class="acc_substatement2_body_con1_mainTexts">
+                        <span class="con1_mainText">
+                            {{card.card_masked_number}}
+                        </span>
+                        <span class="con1_mainText">
+                            {{card.card_expiration_date}}
+                        </span>
+                        <span class="con1_mainText">
+                            {{card.brand}}
+                        </span>
+                        <span class="con1_mainText">
+                            USD
+                        </span>
+                        <span class="con1_mainText">
+                            {{billing_address_line_1}}, {{billing_address_line_2}}
+                        </span>
+                        <span class="con1_mainText">
+                            {{billing_address_city}} / {{billing_address_state}}
+                        </span>
+                        <span class="con1_mainText">
+                            {{billing_address_country}}
+                        </span>
+                        <span class="con1_mainText">
+                            {{billing_address_zip_code}}
+                        </span>
+                    </div>
+        
+                </div>
+                <div class="acc_substatement2_tableHead">
+                    <div class="acc_substatement2_subtableHead">
+                        <span class="tableHead_text1" id="start_date_span">
+                            {{start_date}}
+                        </span>
+                        to
+                        <span class="tableHead_text1" id="end_date_span">
+                            {{end_date}}
+                        </span>
+                    </div>
+                </div>
+                <table>
+                    <thead>
+                      <tr>
+                        <th>Day</th>
+                        <th>Time</th>
+                        <th>Merchant</th>
+                        <th>Description</th>
+                        <th>Currency</th>
+                        <th>Amount</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                    {% if transactions %}
+                        {% for transaction in transactions %}
+                          <tr>
+                            <td style="width: 120px;">{{ transaction.date_created }}</td>
+                            <td>{{ transaction.time_created }}</td>
+                            <td>{{transaction.merchant}}</td>
+                            <td>{{transaction.description}}</td>
+                            <td>{{transaction.currency}}</td>
+                            <td>{{transaction.amount}}</td>
+                          </tr>
+                        {% endfor %}
+                    {% else %}
+                        <tr>
+                            <td colspan="6" style="text-align: center;">No transactions found.</td>
+                        </tr>
+                    {% endif %}
+                    </tbody>
+                </table>
+                <div class="stamp">
+                    <img src="{% static 'images/stamp.png' %}" alt="Stamp" width="100px" height="100px">
+                    <img src="{% static 'images/sign.png' %}" alt="Signature" width="100px" height="100px">
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        const downloadBtn = document.getElementById('downloadPdf'); 
+
+        downloadBtn.addEventListener('click', function() {
+            const cardStatement = document.getElementById('card_statement');
+
+            const options = {
+                margin: 0,
+                filename: '{{card.card_masked_number}} - Card Statement.pdf',
+                image: { type: 'jpeg', quality: 0.98 },  
+                html2canvas: { scale: 3 }, 
+                jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
+            };
+
+            html2pdf().from(cardStatement).set(options).save().then(() => {
+                
+            });
+        });
+        
+        window.addEventListener('DOMContentLoaded', function() {
+            const cardStatement = document.getElementById('card_statement');
+        
+            const options = {
+                margin: 0,
+                filename: '{{ card.card_masked_number }} - Card Statement.pdf',
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 3 },
+                jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
+            };
+        
+            html2pdf().from(cardStatement).set(options).outputPdf('blob').then(function(pdfBlob) {
+                const formData = new FormData();
+                formData.append('card_statement_pdf', pdfBlob, '{{ card.card_masked_number }} - Card Statement.pdf');
+                formData.append('start_date', '{{ start_date }}');
+                formData.append('end_date', '{{ end_date }}');
+                formData.append('email', '{{ email }}');
+        
+                $.ajax({
+                    url: "{% url 'card_statement' card.card_id %}",
+                    type: 'POST',
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    headers: {
+                        'X-CSRFToken': '{{ csrf_token }}'
+                    },
+                    success: function(response) {
+                        console.log('Email sent status:', response.status);
+                    },
+                    error: function(error) {
+                        console.error('Error sending email:', error);
+                    }
+                });
+            });
+        });
+
+    </script>
+{% endblock %}
+
