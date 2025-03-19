@@ -17,6 +17,7 @@ class Profile(models.Model):
     wallet_id = models.CharField(max_length=12, default=None)
     wallet_balance = models.DecimalField(max_digits=50, decimal_places=2, default=0.00)
     phone_number = models.CharField(validators=[phone_regex], max_length=15, blank=True, null=True)
+    profile_picture = models.ImageField(max_length=255, blank=True, null=True)
     address = models.TextField(max_length=1000, null=True, blank=True)
     country = models.CharField(max_length=100, null=True, blank=True)
     state = models.CharField(max_length=100, null=True, blank=True)

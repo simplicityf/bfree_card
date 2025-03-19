@@ -24,6 +24,8 @@ from .forms import validate_password_strength
 from user_agents import parse
 from django.conf import settings
 from rest_framework.authtoken.models import Token
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated, AllowAny
 
 
 # Function to handle json request from postman
@@ -39,7 +41,8 @@ def get_request_data(request):
             return {}
     return request.POST
 
-@login_required
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
 def security(request):
     """
     Returns the user's obfuscated email and any active critical broadcasts.
@@ -61,10 +64,13 @@ def security(request):
         "critical_broadcasts": critical_broadcasts
     })
 
+@csrf_exempt
 def password_reset(request):
     """
-    API endpoint to trigger a password reset email.
+    API endpoint to request a password reset OTP.
     Expects a POST request with an "email" parameter.
+    If the email exists, an OTP is generated, stored in the session,
+    and sent to the user via email.
     """
     if request.method == "POST":
         data = get_request_data(request)
@@ -72,46 +78,86 @@ def password_reset(request):
         if not email:
             return JsonResponse({"error": "Email is required."}, status=400)
         
-        password_reset_form = PasswordResetForm({"email": email})
-        if password_reset_form.is_valid():
-            associated_users = User.objects.filter(email=email)
-            if associated_users.exists():
-                for user in associated_users:
-                    subject = "Bfree Password Reset Request"
-                    
-                    # Prepare dynamic data for the email
-                    domain = request.get_host()
-                    protocol = "http"  # or "https" if applicable
-                    uid = urlsafe_base64_encode(force_bytes(user.pk))
-                    token = default_token_generator.make_token(user)
-                    token_expiry_minutes = settings.PASSWORD_RESET_TIMEOUT // 60
-                    
-                    # Construct a reset URL (adjust the URL pattern as needed)
-                    reset_url = f"{protocol}://{domain}/reset/{uid}/{token}/"
-                    
-                    # Compose a plain text email message
-                    email_content = (
-                        f"Hello {user.first_name} {user.last_name},\n\n"
-                        f"We received a request to reset your password.\n"
-                        f"Please click the link below to reset your password:\n\n"
-                        f"{reset_url}\n\n"
-                        f"This link will expire in {token_expiry_minutes} minutes.\n\n"
-                        f"If you did not request a password reset, please ignore this email.\n\n"
-                        f"Thank you,\n"
-                        f"The Bfree Team"
-                    )
-                    
-                    try:
-                        # Create and send the email message
-                        msg = EmailMessage(
-                            subject, email_content, settings.EMAIL_HOST_USER, [user.email]
-                        )
-                        msg.send()
-                    except BadHeaderError:
-                        return JsonResponse({"error": "Invalid header found."}, status=400)
-            return JsonResponse({"message": "If that email exists, password reset instructions have been sent."})
-        else:
-            return JsonResponse({"error": "Invalid email."}, status=400)
+        try:
+            user = User.objects.get(email=email)
+        except User.DoesNotExist:
+            # For security, do not reveal whether the email exists.
+            return JsonResponse({"message": "User or Email does not exist, please check and try again."})
+        
+        # Generate a 6-digit OTP
+        otp = str(secrets.randbelow(900000) + 100000)
+        
+        # Store the OTP and email in the session along with a timestamp (expires in 10 minutes)
+        request.session["password_reset_otp"] = otp
+        request.session["password_reset_email"] = email
+        request.session["password_reset_otp_timestamp"] = timezone.now().isoformat()
+        
+        subject = "Bfree Password Reset OTP"
+        email_content = (
+            f"Hello {user.first_name} {user.last_name},\n\n"
+            f"Your password reset OTP is: {otp}\n\n"
+            f"This OTP will expire in 10 minutes.\n\n"
+            f"If you did not request a password reset, please ignore this email.\n\n"
+            f"Thank you,\n"
+            f"The Bfree Team"
+        )
+        try:
+            msg = EmailMessage(subject, email_content, settings.EMAIL_HOST_USER, [email])
+            msg.send()
+        except BadHeaderError:
+            return JsonResponse({"error": "Invalid header found."}, status=400)
+        
+        return JsonResponse({"message": "Password reset OTP has been sent to your mail, please check your mail."})
+    return JsonResponse({"error": "Only POST method allowed."}, status=405)
+
+@csrf_exempt
+def verify_password_reset_otp(request):
+    """
+    API endpoint to verify the OTP for password reset and update the password.
+    Expects a POST request with "otp", "new_password", and "confirm_password".
+    """
+    if request.method == "POST":
+        data = get_request_data(request)
+        otp_entered = data.get("otp")
+        new_password = data.get("new_password")
+        confirm_password = data.get("confirm_password")
+        
+        if not otp_entered or not new_password or not confirm_password:
+            return JsonResponse({"error": "OTP, new password, and confirm password are required."}, status=400)
+        
+        if new_password != confirm_password:
+            return JsonResponse({"error": "Passwords do not match."}, status=400)
+        
+        saved_otp = request.session.get("password_reset_otp")
+        saved_email = request.session.get("password_reset_email")
+        otp_timestamp = request.session.get("password_reset_otp_timestamp")
+        
+        if not saved_otp or not saved_email or not otp_timestamp:
+            return JsonResponse({"error": "OTP session expired. Please request a new OTP."}, status=400)
+        
+        otp_timestamp_datetime = dateutil.parser.parse(otp_timestamp)
+        # Check if more than 10 minutes (600 seconds) have passed
+        if (timezone.now() - otp_timestamp_datetime).total_seconds() > 600:
+            return JsonResponse({"error": "OTP expired. Please request a new OTP."}, status=400)
+        
+        if otp_entered != saved_otp:
+            return JsonResponse({"error": "Invalid OTP."}, status=400)
+        
+        try:
+            user = User.objects.get(email=saved_email)
+        except User.DoesNotExist:
+            return JsonResponse({"error": "User not found."}, status=400)
+        
+        # Set the new password
+        user.set_password(new_password)
+        user.save()
+        
+        # Clear OTP-related session variables
+        del request.session["password_reset_otp"]
+        del request.session["password_reset_email"]
+        del request.session["password_reset_otp_timestamp"]
+        
+        return JsonResponse({"message": "Password reset successfully."})
     return JsonResponse({"error": "Only POST method allowed."}, status=405)
 
 @sensitive_post_parameters()
@@ -338,7 +384,8 @@ def validate_password_and_return_error(password):
         return error_message
     return None
 
-@login_required
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
 def send_change_password_otp(request):
     """
     API endpoint to send an OTP for password change.
@@ -361,10 +408,11 @@ def send_change_password_otp(request):
         request.session["password_change_otp_timestamp"] = timezone.now().isoformat()
         
         subject = "Bfree Password Change Verification Code"
-        email_content = {
-            f"Hello {request.user.first_name} {request.user.last_name}",
-            f"Your change password otp is: {password_change_otp}"
-        }
+        email_content = (
+                f"Hello {request.user.first_name} {request.user.last_name},<br><br>"
+                f"Your change password OTP is: {password_change_otp}<br><br>"
+                "Please use this OTP to change your password."
+            )
         try:
             msg = EmailMessage(subject, email_content, settings.EMAIL_HOST_USER, [request.user.email])
             msg.content_subtype = "html"
@@ -374,7 +422,8 @@ def send_change_password_otp(request):
         return JsonResponse({"message": "Email sent."})
     return JsonResponse({"error": "Only POST method allowed."}, status=405)
 
-@login_required
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
 def validate_change_password_otp(request):
     """
     API endpoint to verify OTP for password change.
@@ -403,11 +452,14 @@ def validate_change_password_otp(request):
         return JsonResponse({"error": "Incorrect or expired OTP. Please try again."}, status=400)
     return JsonResponse({"error": "Only POST method allowed."}, status=405)
 
-@login_required
+@api_view(['GET', 'POST'])
+@permission_classes([IsAuthenticated])
 def profile(request):
     """
     API endpoint to view or update a user's profile.
     GET returns profile details; POST updates the profile.
+    If the email is updated, an OTP is sent to the new email,
+    the new email and OTP are stored in session, and the user is logged out.
     """
     try:
         profile_obj = Profile.objects.get(user=request.user)
@@ -416,6 +468,8 @@ def profile(request):
     
     if request.method == "POST":
         data = get_request_data(request)
+        
+        # Update fields in the Profile model
         phone_number = data.get("phone_number")
         address = data.get("address")
         city = data.get("city")
@@ -432,14 +486,117 @@ def profile(request):
             profile_obj.state = state
         if country is not None:
             profile_obj.country = country
+        
+        # Handle file upload for profile picture (if provided)
+        if "profile_picture" in request.FILES:
+            profile_obj.profile_picture = request.FILES["profile_picture"]
+        
         profile_obj.save()
-        return JsonResponse({"message": "Profile updated successfully."})
+        
+        # Update User model fields (email, first_name, last_name)
+        new_email = data.get("email")
+        new_first_name = data.get("first_name")
+        new_last_name = data.get("last_name")
+        email_changed = False
+        
+        if new_email and new_email != request.user.email:
+            # If the email is changing, generate an OTP and send it to the new email.
+            otp = str(secrets.randbelow(900000) + 100000)  # 6-digit OTP
+            # Store new email, OTP, timestamp, and user id in session
+            request.session["new_email"] = new_email
+            request.session["new_email_otp"] = otp
+            request.session["new_email_otp_timestamp"] = timezone.now().isoformat()
+            request.session["user_id_for_email_change"] = request.user.id
+            # Compose and send OTP email
+            subject = "Verify Your New Email for Bfree"
+            email_content = (
+                f"Hello {request.user.first_name} {request.user.last_name},\n\n"
+                f"We received a request to change your email to {new_email}.\n"
+                f"Your verification OTP is: {otp}\n\n"
+                f"This OTP will expire in 10 minutes.\n"
+                f"Please verify your new email to complete the update.\n\n"
+                f"If you did not request this change, please contact support.\n\n"
+                f"Thank you,\nThe Bfree Team"
+            )
+            try:
+                from django.core.mail import EmailMessage, BadHeaderError
+                msg = EmailMessage(subject, email_content, settings.EMAIL_HOST_USER, [new_email])
+                msg.send()
+            except BadHeaderError:
+                return JsonResponse({"error": "Invalid header found while sending OTP."}, status=400)
+            email_changed = True
+        
+        if new_first_name:
+            request.user.first_name = new_first_name
+        if new_last_name:
+            request.user.last_name = new_last_name
+        request.user.save()
+        
+        if email_changed:
+            # Log the user out so they must verify the new email before continuing.
+            logout(request)
+            return JsonResponse({
+                "message": "Profile updated. An OTP has been sent to your new email. Please verify your new email and log in again."
+            })
+        else:
+            return JsonResponse({"message": "Profile updated successfully."})
     
+    # For GET: return a complete profile (combining User and Profile fields)
     data = {
+        "email": request.user.email,
+        "first_name": request.user.first_name,
+        "last_name": request.user.last_name,
+        "profile_picture": profile_obj.profile_picture.url if profile_obj.profile_picture else None,
         "phone_number": profile_obj.phone_number,
         "address": profile_obj.address,
         "city": profile_obj.city,
         "state": profile_obj.state,
         "country": profile_obj.country,
+        "wallet_id": profile_obj.wallet_id,
+        "wallet_balance": profile_obj.wallet_balance
     }
     return JsonResponse({"profile": data})
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def verify_email_change(request):
+    """
+    API endpoint to verify the OTP for a new email.
+    Expects a POST request with "otp".
+    On successful verification, updates the user's email.
+    """
+    data = get_request_data(request)
+    otp_entered = data.get("otp")
+    
+    saved_otp = request.session.get("new_email_otp")
+    new_email = request.session.get("new_email")
+    otp_timestamp = request.session.get("new_email_otp_timestamp")
+    user_id = request.session.get("user_id_for_email_change")
+    
+    if not (otp_entered and saved_otp and new_email and otp_timestamp and user_id):
+        return JsonResponse({"error": "Missing OTP verification data. Please request a new OTP."}, status=400)
+    
+    otp_timestamp_datetime = dateutil.parser.parse(otp_timestamp)
+    # Check if more than 10 minutes (600 seconds) have passed
+    if (timezone.now() - otp_timestamp_datetime).total_seconds() > 600:
+        return JsonResponse({"error": "OTP expired. Please request a new OTP."}, status=400)
+    
+    if otp_entered != saved_otp:
+        return JsonResponse({"error": "Invalid OTP."}, status=400)
+    
+    try:
+        user = User.objects.get(pk=user_id)
+    except User.DoesNotExist:
+        return JsonResponse({"error": "User not found."}, status=400)
+    
+    # Update the user's email
+    user.email = new_email
+    user.save()
+    
+    # Clear OTP-related session keys
+    for key in ["new_email", "new_email_otp", "new_email_otp_timestamp", "user_id_for_email_change"]:
+        if key in request.session:
+            del request.session[key]
+    
+    return JsonResponse({"message": "Email updated successfully. Please log in with your new email."})
+
