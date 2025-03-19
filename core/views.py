@@ -8,6 +8,10 @@ import requests
 import secrets
 from decouple import config
 import json
+from django.http import JsonResponse
+
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated, AllowAny
 
 def request_alphaspace_auth_tokens():
     request_url = f"{config('ALPHASPACE_BASE_URL')}oauth/token"
@@ -37,7 +41,7 @@ def AlphaspaceAPIClient(endpoint, method, data=None):
     alphaspace_auth_token = get_object_or_404(AlphaspaceAuthToken, pk=1)
     
     headers = {
-        'Authorization': f"Bearer {alphaspace_auth_token.access_token}",
+        'Authorization': f"Token {alphaspace_auth_token.access_token}",
         'Idempotency-key': secrets.token_urlsafe(100),
         'Content-Type': 'application/json',
     }
@@ -55,7 +59,7 @@ def AlphaspaceAPIClient(endpoint, method, data=None):
     if response.status_code == 401:
         if request_alphaspace_auth_tokens():
             alphaspace_auth_token = get_object_or_404(AlphaspaceAuthToken, pk=1)
-            headers['Authorization'] = f"Bearer {alphaspace_auth_token.access_token}"
+            headers['Authorization'] = f"Token {alphaspace_auth_token.access_token}"
             response = make_request()
 
     response_data = response.json()
@@ -82,35 +86,21 @@ def nowpayments_api_client(endpoint, method, data=None):
         return f"NowPayments Error: {response_data}"
 
 
-@login_required
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
 def dashboard(request):
     card_count = Card.objects.filter(user=request.user).count()
-    cards = Card.objects.filter(user=request.user)
-    wallet_history_transaction = WalletTransaction.objects.filter(user=request.user)
+    cards = list(Card.objects.filter(user=request.user).values())
+    wallet_history_transaction = list(WalletTransaction.objects.filter(user=request.user).values())
     transaction_count = WalletTransaction.objects.filter(user=request.user).count()
-    critical_broadcasts = CriticalBroadcast.objects.filter(active=True)
-
-    context = {
+    critical_broadcasts = list(CriticalBroadcast.objects.filter(active=True).values())
+    data = {
         'card_count': card_count,
         'cards': cards,
         'critical_broadcasts': critical_broadcasts,
         'wallet_history_transaction': wallet_history_transaction,
         'transaction_count': transaction_count
     }
-    return render(request, 'dashboard.html', context)
-
-
-def redirect_logo(request):
-    return redirect('/static/images/logo.png', permanent=True)
-    
-    
-def privacy_policy(request):
-    return render(request, 'privacy_policy.html')
-
-def terms_and_conditions(request):
-    return render(request, 'terms_and_conditions.html')
-
-
-
+    return JsonResponse(data)
 
 

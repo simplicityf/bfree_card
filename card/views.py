@@ -1,11 +1,8 @@
 from django.shortcuts import get_object_or_404
-from django.contrib.auth.decorators import login_required
 from card.models import *
-from authentication.models import AlphaspaceAuthToken
+
 from .models import *
 from crypto_wallet.models import *
-import requests
-import secrets
 from decouple import config
 import json
 
@@ -13,8 +10,30 @@ from django.http import JsonResponse, HttpResponse, HttpResponseForbidden
 from datetime import datetime, date
 from decimal import Decimal
 
+# Import symbols defined in other apps/modules
+from core.models import CriticalBroadcast, Account, WalletTransaction 
+from authentication.models import Profile 
+from core.views import AlphaspaceAPIClient 
+from core.utils import generate_unique_nickname
+
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
+
+def get_request_data(request):
+    """
+    Returns parsed JSON data if the content type is JSON,
+    otherwise returns request.POST.
+    """
+    if request.content_type == "application/json":
+        try:
+            return json.loads(request.body)
+        except json.JSONDecodeError:
+            return {}
+    return request.POST
+
 # --- CARDS LIST ENDPOINT ---
-@login_required
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
 def cards(request):
     # Get cards belonging to the user
     cards_qs = Card.objects.filter(user=request.user)
@@ -37,20 +56,21 @@ def cards(request):
     return JsonResponse(data)
 
 # --- CREATE CARD ENDPOINT ---
-@login_required
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
 def create_card(request):
     if request.method != "POST":
         return HttpResponseForbidden("Only POST method allowed.")
-    
-    str_amount = request.POST.get("amount")
+    data = get_request_data(request)
+    str_amount = data.get("amount")
     card_creation_fee = Decimal(10)
     try:
         amount = Decimal(str_amount) - card_creation_fee
     except Exception:
         return JsonResponse({"error": "Invalid amount."}, status=400)
     
-    card_color = request.POST.get("card_color")
-    brand = request.POST.get("brand")
+    card_color = data.get("card_color")
+    brand = data.get("brand")
     
     if Decimal(str_amount) < Decimal(15):
         return JsonResponse({"error": "Amount must be not less than $15."}, status=400)
@@ -167,7 +187,8 @@ def create_card(request):
     return JsonResponse({"message": "Card created successfully.", "card_id": card_obj.card_id})
 
 # --- FREEZE / UNFREEZE CARD ENDPOINT ---
-@login_required
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
 def freeze_and_unfreeze_card(request, card_id):
     if request.method != "POST":
         return HttpResponseForbidden("Only POST method allowed.")
@@ -194,12 +215,13 @@ def freeze_and_unfreeze_card(request, card_id):
     return JsonResponse({'message': message})
 
 # --- FUND CARD ENDPOINT ---
-@login_required
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
 def fund_card(request, card_id):
     if request.method != "POST":
         return HttpResponseForbidden("Only POST method allowed.")
-    
-    str_amount = request.POST.get("amount")
+    data = get_request_data(request)
+    str_amount = data.get("amount")
     try:
         amount = Decimal(str_amount)
     except Exception:
@@ -233,12 +255,13 @@ def fund_card(request, card_id):
     return JsonResponse({"message": "Card funded successfully."})
 
 # --- WITHDRAW FROM CARD ENDPOINT ---
-@login_required
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
 def withdraw_from_card(request, card_id):
     if request.method != "POST":
         return HttpResponseForbidden("Only POST method allowed.")
-    
-    str_amount = request.POST.get("amount")
+    data = get_request_data(request)
+    str_amount = data.get("amount")
     try:
         amount = Decimal(str_amount)
     except Exception:
@@ -274,7 +297,8 @@ def withdraw_from_card(request, card_id):
     return JsonResponse({"message": "Card withdrawal successful."})
 
 # --- CANCEL CARD ENDPOINT ---
-@login_required
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
 def cancel_card(request, card_id):
     if request.method != "POST":
         return HttpResponseForbidden("Only POST method allowed.")
@@ -300,7 +324,8 @@ def cancel_card(request, card_id):
     return JsonResponse({"message": "Card cancelled successfully."})
 
 # --- CARD TRANSACTIONS ENDPOINT ---
-@login_required
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
 def card_transactions(request, card_id):
     if request.method != "GET":
         return HttpResponse("Only GET method allowed.", status=405)
@@ -322,7 +347,8 @@ def card_transactions(request, card_id):
     return JsonResponse({'transactions': filtered_transactions})
 
 # --- CARD STATEMENT ENDPOINT ---
-@login_required
+@api_view(['GET','POST'])
+@permission_classes([IsAuthenticated])
 def card_statement(request, card_id):
     card = Card.objects.filter(user=request.user, card_id=card_id).first()
     if not card or card.user != request.user:
@@ -401,7 +427,8 @@ def card_statement(request, card_id):
     return JsonResponse({"error": "Invalid HTTP method."}, status=405)
 
 # --- TEST ENDPOINT ---
-@login_required
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
 def test(request):
     response_data = AlphaspaceAPIClient(
         f'alpha/reports/view-cards-transactions?card=9d911dda-d9da-4c0a-add0-62dd5c1fb4e2', 

@@ -1,87 +1,121 @@
-from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
-from core.views import nowpayments_api_client
-import requests
-from core.models import CryptoTransaction
-from crypto_wallet.models import CryptoFundingRequest
 from django.http import JsonResponse, HttpResponseForbidden
+from django.utils import timezone
+from core.views import nowpayments_api_client
+from core.models import CryptoTransaction, CriticalBroadcast, Account  # adjust imports as needed
+from crypto_wallet.models import CryptoFundingRequest, CryptoAddress
 import uuid
-from .models import *
-from core.models import *
+import requests
+from django.conf import settings
+import json
+from decouple import config
 
-@login_required
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated, AllowAny
+
+def get_request_data(request):
+    """
+    Returns parsed JSON data if the content type is JSON,
+    otherwise returns request.POST.
+    """
+    if request.content_type == "application/json":
+        try:
+            return json.loads(request.body)
+        except json.JSONDecodeError:
+            return {}
+    return request.POST
+
+@api_view(['GET', 'POST'])
+@permission_classes([IsAuthenticated])
 def crypto(request):
     if request.method == "POST":
-        amount = request.POST.get("amount")
+        data = get_request_data(request)
+        
+        amount = data.get("amount")
         
         if not amount:
             return JsonResponse({'error': "Amount is required."}, status=400)
         
-        if amount and amount.isdigit() and int(amount) > 2000:
+        # Check if amount is numeric and within allowed range
+        if amount.isdigit() and int(amount) > 2000:
             return JsonResponse({'error': "Amount mustn't be more than $2000"}, status=400)
-
+        
         payload = {
-          "price_amount": amount,
-          "price_currency": "usd",
-          "is_fee_paid_by_user": True,
-          "ipn_callback_url": "https://crypto.bfree.cards/webhook/nowpayments",
-          "success_url": "https://crypto.bfree.cards/crypto/",
-          "cancel_url": "https://crypto.bfree.cards/crypto/"
+            "price_amount": amount,
+            "price_currency": "usd",
+            "is_fee_paid_by_user": True,
+            "ipn_callback_url": config('IPN_CALLBACK_URL'),
+            "success_url": config('SUCCESS_URL'),
+            "cancel_url": config('CANCEL_URL')
         }
-
+        
         response = nowpayments_api_client('invoice', 'POST', data=payload)
-
+        
         if 'id' in response:
-            CryptoTransaction.objects.create(user=request.user, transaction_id=response['id'], amount=amount, invoice_url=response['invoice_url'])
+            CryptoTransaction.objects.create(
+                user=request.user,
+                transaction_id=response['id'],
+                amount=amount,
+                invoice_url=response['invoice_url']
+            )
             return JsonResponse({'invoice_url': response['invoice_url']})
         else:
             return JsonResponse({'error': response}, status=400)
-    crypto_addresses = CryptoAddress.objects.all()
-    critical_broadcasts = CriticalBroadcast.objects.filter(active=True)
     
-    return render(request, 'crypto.html', {'crypto_addresses': crypto_addresses, 'critical_broadcasts': critical_broadcasts,})
+    crypto_addresses = list(CryptoAddress.objects.all().values())
+    critical_broadcasts = list(CriticalBroadcast.objects.filter(active=True).values())
     
-@login_required
+    return JsonResponse({
+        'crypto_addresses': crypto_addresses,
+        'critical_broadcasts': critical_broadcasts
+    })
+
+@api_view(['GET', 'POST'])
+@permission_classes([IsAuthenticated])
 def crypto_funding_request(request):
     if request.method == "POST":
-        amount = request.POST.get("funding_request_amount")
-        transaction_id = request.POST.get("transaction_id")
-        address_id = request.POST.get("address_id")
+        data = get_request_data(request)
+        amount = data.get("funding_request_amount")
+        transaction_id = data.get("transaction_id")
+        address_id = data.get("address_id")
         if not amount or not transaction_id:
-            return JsonResponse({'error': "Amount and Transaction ID is required."}, status=400)
+            return JsonResponse({'error': "Amount and Transaction ID are required."}, status=400)
         
         if amount and not amount.isdigit():
             return JsonResponse({'error': "Amount must be a numeric value"}, status=400)
         
+        # Create a funding request
         CryptoFundingRequest.objects.create(user=request.user, transaction_id=transaction_id, amount=amount)
-        address = CryptoAddress.objects.get(id=address_id)
-        
-        subject = "Funding Request Received"
-        email_template_name = "crypto_transaction_email_templates/funding_request_received.html"
-        c = {
-            "first_name": request.user.first_name,
-            "last_name": request.user.last_name,
-            'amount': amount,
-            'transaction_id': transaction_id,
-            'network_chain': address.network_chain,
-            'coin': address.coin,
-            'address': address.address,
-            'dateTime': timezone.now(),
-        }
-        email = render_to_string(email_template_name, c)
         try:
-            msg = EmailMessage(subject, email, settings.EMAIL_HOST_USER, [request.user.email, settings.EMAIL_HOST_USER])
-            msg.content_subtype = 'html'
+            address = CryptoAddress.objects.get(id=address_id)
+        except CryptoAddress.DoesNotExist:
+            return JsonResponse({'error': "Crypto address not found."}, status=404)
+        
+        # Compose a plain text email message
+        email_content = (
+            f"Hello {request.user.first_name} {request.user.last_name},\n\n"
+            f"Your funding request for ${amount} has been received.\n"
+            f"Transaction ID: {transaction_id}\n"
+            f"Network Chain: {address.network_chain}\n"
+            f"Coin: {address.coin}\n"
+            f"Address: {address.address}\n"
+            f"DateTime: {timezone.now()}\n\n"
+            "Thank you,\nThe Bfree Team"
+        )
+        subject = "Funding Request Received"
+        try:
+            from django.core.mail import EmailMessage, BadHeaderError
+            msg = EmailMessage(subject, email_content, settings.EMAIL_HOST_USER, [request.user.email, settings.EMAIL_HOST_USER])
             msg.send()
         except BadHeaderError:
-            return HttpResponse('Invalid header found.')
+            return JsonResponse({'error': "Invalid header found."}, status=400)
+        
         return JsonResponse({'message': 'Funding Request Received'}, status=200)
-    return HttpResponseForbidden()
     
+    return HttpResponseForbidden()
 
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
 def test(request):
     response = nowpayments_api_client('currencies?fixed_rate=true', 'GET')
-    return render(request, 'test.html', {'response': response})
-
-
-
+    return JsonResponse({'response': response})
